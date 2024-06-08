@@ -1,0 +1,6 @@
+/target
+/data
+/play
+.venv/
+_archive/
+.env
