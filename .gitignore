@@ -4,3 +4,5 @@
 .venv/
 _archive/
 .env
+/.vscode
+x_expanded.rs

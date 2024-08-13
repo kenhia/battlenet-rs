@@ -1,12 +1,7 @@
 use battlenet_rs::client::BattleNetClient;
-use battlenet_rs::wow_models::wow_token::{
-    WowTokenIndex, WowTokenIndexJsonResult, WowTokenIndexResult,
-};
 use battlenet_rs::wow_models::prelude::*;
 use chrono::{DateTime, Local, Utc};
 use num_format::{Locale, ToFormattedString};
-use battlenet_rs::wow_models::UrlArgs;
-
 
 // https://us.api.blizzard.com/data/wow/token/index?namespace=static-us&locale=en_US
 // https://us.api.blizzard.com/data/wow/token/index?namespace=dynamic-us&locale=en_US&access_token=<token>
@@ -49,7 +44,7 @@ async fn main() {
         realm_slug: "trollbane".to_string(),
         name: "belarsa".to_string(),
     };
-    let character_profile_status_json_result: WowCharacterProfileStatusJsonResult =
+    let character_profile_status_json_result: CharacterProfileStatusJsonResult =
         client.get_json::<CharacterProfileStatus>(&belarsa).await;
     match character_profile_status_json_result {
         Ok(character_profile_status_json) => {
@@ -60,11 +55,7 @@ async fn main() {
         }
     }
     println!();
-    let belarsa = UrlArgs::Player {
-        realm_slug: "trollbane".to_string(),
-        name: "belarsa".to_string(),
-    };
-    let character_profile_status_result: WowCharacterProfileStatusResult =
+    let character_profile_status_result: CharacterProfileStatusResult =
         client.get_data(&belarsa).await;
     match character_profile_status_result {
         Ok(character_profile_status) => {

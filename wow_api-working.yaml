@@ -1,0 +1,268 @@
+CoreStructs: # -------------------------------------------------------------
+  # Basic
+  HrefLink:
+    href: String
+  LinksRef:
+    self_.self: HrefLink
+  TypeAndName:
+    type_.type: String
+    name: String
+  TypeAndValue:
+    type_.type: String
+    value: String
+  NameAndId:
+    key: HrefLink
+    name: String
+    id: u64
+  KeyAndId:
+    key: HrefLink
+    id: u64
+  Realm:
+    name: String
+    id: u64
+    slug: String
+  RealmLong:
+    id: u64
+    region: NameAndId
+    connected_realm: HrefLink
+    name: String
+    category: String
+    locale: String
+    timezone: String
+    type_.type: TypeAndName
+    is_tournament: bool
+    slug: String
+  CharacterGuild:
+    name: String
+    id: u64
+    realm: Realm
+    faction: TypeAndName
+  CharacterTitle:
+    name: String
+    id: u64
+    display_string: String
+  CharacterCovenantProgress:
+    chosen_covenant: TypeAndName
+    renown_level: u64
+    soulbinds: HrefLink
+  # Media
+  Asset:
+    key: String
+    value: String
+    file_data_id: u64
+  # For Achievements
+  Aggregates:
+    quantity: i32
+    points: i32
+  AggregatesByFaction:
+    alliance: Aggregates
+    horde: Aggregates
+  AchievementCriteria:
+    id: u32
+    description: String
+    amount: u32
+    operator: Option<AchievementCriteriaOperator>
+    child_criteria: Option<Vec<AchievementCriteria>>
+  AchievementCriteriaOperator:
+    type_.type: String
+    name: String
+
+Achievement: # -------------------------------------------------------------
+  AchievementCategoriesIndex:
+    endpoint: data/wow/achievement-category/index
+    namespace: Static
+    description: Returns an index of achievement categories.
+    struct:
+        links._links: LinksRef
+        categories: Vec<NameAndId>
+        root_categories: Vec<NameAndId>
+        guild_categories: Vec<NameAndId>
+
+  AchievementCategory:
+    endpoint: data/wow/achievement-category/{id}
+    url_args: Id
+    namespace: Static
+    description: Returns a single achievement category by ID.
+    struct:
+        links._links: LinksRef
+        id: u32
+        name: String
+        achievements: Vec<NameAndId>
+        subcategories: Option<Vec<NameAndId>>
+        parent_category: Option<NameAndId>
+        is_guild_category: bool
+        aggregates_by_faction: AggregatesByFaction
+        display_order: u32
+
+  AchievementsIndex:
+    endpoint: data/wow/achievement/index
+    namespace: Static
+    description: Returns an index of achievements.
+    struct:
+        links._links: LinksRef
+        achievements: Vec<NameAndId>
+
+  Achievement:
+    endpoint: data/wow/achievement/{id}
+    url_args: Id
+    namespace: Static
+    description: Returns a single achievement by ID.
+    struct:
+        links._links: LinksRef
+        id: u32
+        category: NameAndId
+        name: String
+        description: String
+        points: u32
+        is_account_wide: bool
+        criteria: AchievementCriteria
+        prerequisite_achievement: Option<NameAndId>
+        next_achievement: Option<NameAndId>
+        reward_description: Option<String>
+        media: KeyAndId
+        display_order: u32
+
+  AchievementMedia:
+    endpoint: data/wow/media/achievement/{id}
+    url_args: Id
+    namespace: Static
+    description: Returns media for an achievement by ID.
+    struct:
+        links._links: LinksRef
+        assets: Vec<Asset>
+        id: u32
+
+Auction_House: # ----------------------------------------------------------
+  AuctionItem:
+    description: An item in the auction house.
+    enum:
+      Pet:
+        id: u64
+        modifiers: Option<Vec<TypeAndValue>>
+        pet_breed_id: u64
+        pet_level: u64
+        pet_quality_id: u64
+        pet_species_id: u64
+      Item:
+        id: u64
+        context: Option<u64>
+        bonus_lists: Option<Vec<u64>>
+        modifiers: Option<Vec<TypeAndValue>>
+  struct!Auctions:
+    links._links: LinksRef
+    connected_realm: HrefLink
+    auctions: Vec<Auction>
+    commodities: HrefLink
+  Auctions:
+    endpoint: data/wow/connected-realm/{id}/auctions
+    url_args: Id
+    namespace: Dynamic
+    description: Returns a list of current auctions for a connected realm.
+    struct:
+        links._links: LinksRef
+        connected_realm: HrefLink
+        auction_id: u64
+        item: NameAndId
+        owner: TypeAndName
+        owner_realm: Realm
+        bid: i64
+        buyout: i64
+        quantity: u64
+        time_left: String
+        rand: u64
+        seed: u64
+        context: u64
+
+
+# Azerite_Essence: # --------------------------------------------------------
+
+Connected_Realm: # ---------------------------------------------------------
+  ConnectedRealmsIndex:
+    endpoint: data/wow/connected-realm/index
+    namespace: Dynamic
+    description: Returns an index of connected realms.
+    struct:
+        links._links: LinksRef
+        connected_realms: Vec<HrefLink>
+
+  ConnectedRealm:
+    endpoint: data/wow/connected-realm/{id}
+    url_args: Id
+    namespace: Dynamic
+    description: Returns a single connected realm by ID.
+    struct:
+        links._links: LinksRef
+        id: u32
+        has_queue: bool
+        status: TypeAndName
+        population: TypeAndName
+        realms: Vec<RealmLong>
+
+
+
+
+
+
+
+
+
+
+
+Character_Profile: # --------------------------------------------------------
+  CharacterProfileStatus:
+    endpoint: profile/wow/character/{realm_slug}/{name}/status
+    url_args: Player
+    namespace: Profile
+    description: Returns the status and a unique ID for a character.
+    struct:
+        id: u64
+        is_valid: bool
+
+  CharacterProfile:
+    endpoint: profile/wow/character/{realm_slug}/{name}
+    url_args: Player
+    namespace: Profile
+    description: Returns a single character by name and realm.
+    struct:
+        links._links: LinksRef
+        id: u64
+        name: String
+        gender: TypeAndName
+        faction: TypeAndName
+        race: NameAndId
+        character_class: NameAndId
+        active_spec: TypeAndName
+        realm: Realm
+        guild: Option<CharacterGuild>
+        level: u64
+        experience: u64
+        achievement_points: u64
+        last_login_timestamp: u64
+        average_item_level: u64
+        equipped_item_level: u64
+        active_title: Option<CharacterTitle>
+        achievements: HrefLink
+        titles: HrefLink
+        pvp_summary: HrefLink
+        encounters: HrefLink
+        media: HrefLink
+        specializations: HrefLink
+        statistics: HrefLink
+        mythic_keystone_profile: HrefLink
+        equipment: HrefLink
+        appearance: HrefLink
+        collections: HrefLink
+        reputations: HrefLink
+        quests: HrefLink
+        achievements_statistics: HrefLink
+        professions: HrefLink
+
+Wow_Token: # ---------------------------------------------------------------
+  _NO_CORE: true
+  WowTokenIndex:
+    endpoint: data/wow/token/index
+    namespace: Dynamic
+    description: Returns the current WoW Token price.
+    struct:
+        price: i64
+        last_updated_timestamp: i64

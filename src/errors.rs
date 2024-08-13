@@ -1,9 +1,9 @@
 use thiserror::Error;
 
-pub type BattlenetClientResult<T> = Result<T, BattlenetClientError>;
+pub type BattlenetClientResult<T> = Result<T, BattleNetClientError>;
 
 #[derive(Error, Debug)]
-pub enum BattlenetClientError {
+pub enum BattleNetClientError {
     /// Represents any reqwest that has failed, propagating the error context.
     #[error("{0}")]
     ClientRequestFailed(#[from] reqwest::Error),

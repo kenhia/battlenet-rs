@@ -1,0 +1,43 @@
+# If there is no endpoint, then this is a simple struct/enum and will not
+# get all the extra code.
+
+Auction:
+  description: An auction.
+  struct:
+    id: u64
+    item: AuctionItem
+    buyout: i64
+    quantity: u64
+    time_left: String
+
+AuctionItem:
+  description: The item being auctioned.
+  traits:
+    - "#[derive(Debug, Deserialize)]"
+    - "#[serde(untagged)]"
+  enum:
+    Pet:
+      id: u64
+      modifiers: Option<Vec<TypeAndValue>>
+      pet_breed_id: u64
+      pet_level: u64
+      pet_quality_id: u64
+      pet_species_id: u64
+    Item:
+      id: u64
+      context: Option<u64>
+      bonus_lists: Option<Vec<u64>>
+      modifiers: Option<Vec<TypeAndValue>>
+
+# Endpoint models below ================================================
+
+Auctions:
+  endpoint: data/wow/connected-realm/{id}/auctions
+  url_args: Id
+  namespace: Dynamic
+  description: Returns a list of current auctions for a connected realm.
+  struct:
+      links._links: LinksRef
+      connected_realm: HrefLink
+      auctions: Vec<Auction>
+      commodities: HrefLink

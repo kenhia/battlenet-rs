@@ -1,6 +1,6 @@
 use crate::{
     auth::AccessTokenResponse,
-    errors::{BattlenetClientError, BattlenetClientResult},
+    errors::{BattleNetClientError, BattlenetClientResult},
     region::BattleNetRegion,
     wow_models::{GenerateUrl, UrlArgs},
 };
@@ -11,14 +11,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 use time::OffsetDateTime;
 
-/// The krba client.
-/// ```rust
-/// use krba::BattleNetClient;
-///
-/// #[tokio::main]
-/// async fn main() {
-/// }
-/// ```
+/// The BattleNetClient
 #[derive(Debug)]
 pub struct BattleNetClient {
     /// The reqwest client.
@@ -68,7 +61,7 @@ impl BattleNetClient {
     /// # Example
     /// Uses crate `dotenvy` to load environment variables from ".env" file.
     /// ```rust
-    /// use krba::BattleNetClient;
+    /// use battlenet_rs::client::BattleNetClient;
     ///
     /// let _ = dotenvy::from_filename(".env");
     /// let client = BattleNetClient::new_from_environment();
@@ -107,7 +100,7 @@ impl BattleNetClient {
     fn try_access_token(&self) -> BattlenetClientResult<Option<String>> {
         match self.access_token.try_lock() {
             Ok(token_lock) => match token_lock.as_ref() {
-                None => Err(BattlenetClientError::ClientTokenNotAvailable),
+                None => Err(BattleNetClientError::ClientTokenNotAvailable),
                 Some(token) => match self.try_refresh_required() {
                     Ok(refresh_required) => {
                         if refresh_required {
@@ -116,10 +109,10 @@ impl BattleNetClient {
                             Ok(Some(token.to_owned()))
                         }
                     }
-                    Err(e) => Err(BattlenetClientError::ClientTokenMutex(e.to_string())),
+                    Err(e) => Err(BattleNetClientError::ClientTokenMutex(e.to_string())),
                 },
             },
-            Err(e) => Err(BattlenetClientError::ClientTokenMutex(e.to_string())),
+            Err(e) => Err(BattleNetClientError::ClientTokenMutex(e.to_string())),
         }
     }
 
@@ -131,7 +124,7 @@ impl BattleNetClient {
                 let now = time::OffsetDateTime::now_utc();
                 Ok(expiration.le(&now))
             }
-            Err(e) => Err(BattlenetClientError::ClientTokenMutex(e.to_string())),
+            Err(e) => Err(BattleNetClientError::ClientTokenMutex(e.to_string())),
         }
     }
 
@@ -157,7 +150,7 @@ impl BattleNetClient {
         if let Ok(mut token_lock) = self.access_token.try_lock() {
             *token_lock = Some(access_token.clone());
         } else {
-            return Err(BattlenetClientError::ClientTokenMutex(
+            return Err(BattleNetClientError::ClientTokenMutex(
                 "Could not lock token".to_string(),
             ));
         }
@@ -166,7 +159,7 @@ impl BattleNetClient {
             let expires_in_duration = Duration::from_secs(token_response.expires_in);
             *expiration_lock = OffsetDateTime::now_utc().add(expires_in_duration);
         } else {
-            return Err(BattlenetClientError::ClientTokenMutex(
+            return Err(BattleNetClientError::ClientTokenMutex(
                 "Could not lock expiration".to_string(),
             ));
         }
@@ -182,7 +175,7 @@ impl BattleNetClient {
     }
 
     // Get data for the object
-    pub async fn get_data<T>(&self, url_args:&UrlArgs) -> Result<T, BattlenetClientError>
+    pub async fn get_data<T>(&self, url_args: &UrlArgs) -> Result<T, BattleNetClientError>
     where
         T: for<'a> Deserialize<'a> + GenerateUrl,
     {
@@ -194,7 +187,7 @@ impl BattleNetClient {
     }
 
     // Get the JSON string for the object
-    pub async fn get_json<T>(&self, url_args:&UrlArgs) -> Result<String, BattlenetClientError>
+    pub async fn get_json<T>(&self, url_args: &UrlArgs) -> Result<String, BattleNetClientError>
     where
         T: GenerateUrl,
     {
@@ -205,7 +198,7 @@ impl BattleNetClient {
     }
 }
 
-pub fn json_to_struct<T: for<'a> Deserialize<'a>>(json: &str) -> Result<T, BattlenetClientError> {
+pub fn json_to_struct<T: for<'a> Deserialize<'a>>(json: &str) -> Result<T, BattleNetClientError> {
     let result: T = serde_json::from_str(json)?;
     Ok(result)
 }

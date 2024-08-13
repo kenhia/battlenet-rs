@@ -1,0 +1,82 @@
+# If there is no endpoint, then this is a simple struct/enum and will not
+# get all the extra code.
+
+AchievementCriteria:
+  amount: u32
+  child_criteria: Option<Vec<AchievementCriteria>>
+  description: String
+  id: u32
+  operator: Option<AchievementCriteriaOperator>
+AchievementCriteriaOperator:
+  name: String
+  type_.type: String
+Aggregates:
+  points: i32
+  quantity: i32
+AggregatesByFaction:
+  alliance: Aggregates
+  horde: Aggregates
+
+Achievement:
+  description: Returns a single achievement by ID.
+  endpoint: data/wow/achievement/{id}
+  namespace: Static
+  url_args: Id
+  struct:
+    category: NameAndId
+    criteria: AchievementCriteria
+    description: String
+    display_order: u32
+    id: u32
+    is_account_wide: bool
+    links._links: LinksRef
+    media: KeyAndId
+    name: String
+    next_achievement: Option<NameAndId>
+    points: u32
+    prerequisite_achievement: Option<NameAndId>
+    reward_description: Option<String>
+
+AchievementCategoriesIndex:
+  description: Returns an index of achievement categories.
+  endpoint: data/wow/achievement-category/index
+  namespace: Static
+  struct:
+    categories: Vec<NameAndId>
+    guild_categories: Vec<NameAndId>
+    links._links: LinksRef
+    root_categories: Vec<NameAndId>
+
+AchievementCategory:
+  description: Returns a single achievement category by ID.
+  endpoint: data/wow/achievement-category/{id}
+  namespace: Static
+  url_args: Id
+  struct:
+    achievements: Vec<NameAndId>
+    aggregates_by_faction: AggregatesByFaction
+    display_order: u32
+    id: u32
+    is_guild_category: bool
+    links._links: LinksRef
+    name: String
+    parent_category: Option<NameAndId>
+    subcategories: Option<Vec<NameAndId>>
+
+AchievementMedia:
+  description: Returns media for an achievement by ID.
+  endpoint: data/wow/media/achievement/{id}
+  namespace: Static
+  url_args: Id
+  struct:
+    assets: Vec<Asset>
+    id: u32
+    links._links: LinksRef
+
+AchievementsIndex:
+  description: Returns an index of achievements.
+  endpoint: data/wow/achievement/index
+  namespace: Static
+  struct:
+    achievements: Vec<NameAndId>
+    links._links: LinksRef

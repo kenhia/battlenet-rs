@@ -1,0 +1,64 @@
+# If there is no endpoint, then this is a simple struct/enum and will not
+# get all the extra code.
+
+Asset:
+  # Media
+  file_data_id: u64
+  key: String
+  value: String
+
+CharacterCovenantProgress:
+  chosen_covenant: TypeAndName
+  renown_level: u64
+  soulbinds: HrefLink
+
+CharacterGuild:
+  faction: TypeAndName
+  id: u64
+  name: String
+  realm: Realm
+
+CharacterTitle:
+  display_string: String
+  id: u64
+  name: String
+
+HrefLink:
+  href: String
+
+KeyAndId:
+  id: u64
+  key: HrefLink
+
+LinksRef:
+  self_.self: HrefLink
+
+NameAndId:
+  id: u64
+  key: HrefLink
+  name: String
+
+Realm:
+  id: u64
+  name: String
+  slug: String
+
+RealmLong:
+  category: String
+  connected_realm: HrefLink
+  id: u64
+  is_tournament: bool
+  locale: String
+  name: String
+  region: NameAndId
+  slug: String
+  timezone: String
+  type_.type: TypeAndName
+
+TypeAndName:
+  name: String
+  type_.type: String
+
+TypeAndValue:
+  type_.type: String
+  value: String
