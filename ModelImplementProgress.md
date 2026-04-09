@@ -1,6 +1,8 @@
 
 # Progress of API Wrapper Implementation
 
+> **Last audited against official API docs**: 2026-04-08
+
 ## World of Warcraft (Retail) Profile APIs
 
 ### Account Profile
@@ -14,6 +16,8 @@
 | *Account Pets Collection* | `profile/user/wow/collections/pets` | TBD | TBD | TBD |
 | *Account Toys Collection* | `profile/user/wow/collections/toys` | TBD | TBD | TBD |
 | *Account Heirlooms Collection* | `profile/user/wow/collections/heirlooms` | TBD | TBD | TBD |
+| *Account Decor Collection Summary* | `profile/user/wow/collections/decor` | New — TBD | New — TBD | New — TBD |
+| *Account Transmog Collection Summary* | `profile/user/wow/collections/transmogs` | New — TBD | New — TBD | New — TBD |
 
 ### Character Achievements
 
@@ -74,7 +78,7 @@
 | API | Endpoint | Model | Impl. | Unit Test |
 |-----|----------|-------|-------|-----------|
 | Character Profile Summary | `profile/wow/character/{realmSlug}/{characterName}` | `character_profile.rs` | ✅ | ❌ |
-| Character Profile Status | `profile/wow/character/{realmSlug}/{characterName}/status` | `character_profile.rs` | ✅ | ✅ |
+| Character Profile Status | `profile/wow/character/{realmSlug}/{characterName}/status` | `character_profile.rs` | ✅ | ❌ |
 
 ### Character PvP
 | API | Endpoint | Model | Impl. | Unit Test |
@@ -127,25 +131,27 @@
 ### Achievement
 | API | Endpoint | Model | Impl. | Unit Test |
 |-----|----------|-------|-------|-----------|
-| Achievement Categories Index | `data/wow/achievement-category/index` | `achievment.rs` | ✅ | ✅ |
-| Achievement Category | `data/wow/achievement-category/{achievementCategoryId}` | `achievment.rs` | ✅ | ✅ |
-| Achievement Index | `data/wow/achievement/index` | `achievment.rs` | ✅ | ✅ |
-| Achievement | `data/wow/achievement/{achievementId}` | `achievment.rs` | ✅ | ✅ |
-| Achievement Media | `data/wow/media/achievement/{achievementId}` | `achievment.rs` | ✅ | ✅ |
+| Achievement Categories Index | `data/wow/achievement-category/index` | `achievement.rs` | ✅ | ✅ |
+| Achievement Category | `data/wow/achievement-category/{achievementCategoryId}` | `achievement.rs` | ✅ | ✅ |
+| Achievement Index | `data/wow/achievement/index` | `achievement.rs` | ✅ | ✅ |
+| Achievement | `data/wow/achievement/{achievementId}` | `achievement.rs` | ✅ | ✅ |
+| Achievement Media | `data/wow/media/achievement/{achievementId}` | `achievement.rs` | ✅ | ✅ |
 
 ### Auction House
 | API | Endpoint | Model | Impl. | Unit Test |
 |-----|----------|-------|-------|-----------|
-| Auctions | `data/wow/connected-realm/{connectedRealmId}/auctions` | TBD | TBD | TBD |
+| Auctions | `data/wow/connected-realm/{connectedRealmId}/auctions` | `auction_house.rs` ⚠️ | TBD | TBD |
 | Commodities | `data/wow/auctions/commodities` | TBD | TBD | TBD |
+
+> ⚠️ `auction_house.rs` contains model structs (`PetItem`, `AuctionItem`, `Auction`, `Auctions`) but the module is **not declared** in `src/wow_models.rs` — the file is orphaned and never compiled.
 
 ### Azerite Essence
 | API | Endpoint | Model | Impl. | Unit Test |
 |-----|----------|-------|-------|-----------|
-| Azerite Essences Index | `data/wow/azerite-essences/index` | TBD | TBD | TBD |
-| Azerite Essence | `data/wow/azerite-essences/{azeriteEssenceId}` | TBD | TBD | TBD |
-| Azerite Essence Search | `data/wow/search/azerite-essences` | TBD | TBD | TBD |
-| Azerite Essence Media | `data/wow/media/azerite-essences/{azeriteEssenceId}` | TBD | TBD | TBD |
+| Azerite Essences Index | `data/wow/azerite-essence/index` | TBD | TBD | TBD |
+| Azerite Essence | `data/wow/azerite-essence/{azeriteEssenceId}` | TBD | TBD | TBD |
+| Azerite Essence Search | `data/wow/search/azerite-essence` | TBD | TBD | TBD |
+| Azerite Essence Media | `data/wow/media/azerite-essence/{azeriteEssenceId}` | TBD | TBD | TBD |
 
 ### Connected Realms
 | API | Endpoint | Model | Impl. | Unit Test |
@@ -402,6 +408,7 @@
 ### WoW Token
 | API | Endpoint | Model | Impl. | Unit Test |
 |-----|----------|-------|-------|-----------|
-| WoW Token Index (US, EU, KR, TW) | `data/wow/token/index` | `wow_token.rs` | ✅ | ✅ |
-| WoW Token Index (CN) | `data/wow/token/index` | `wow_token.rs` | ✅ | ✅ |
+| WoW Token Index | `data/wow/token/index` | `wow_token.rs` | ✅ | ✅ |
+
+> All regions (US, EU, KR, TW, CN) use the same model and endpoint. Region handling is done by `BattleNetClient`, not per-endpoint logic.
 

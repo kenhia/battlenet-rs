@@ -1,0 +1,80 @@
+_helpers:
+  Aggregates:
+    quantity: i32
+    points: i32
+  AggregatesByFaction:
+    alliance: Aggregates
+    horde: Aggregates
+  AchievementCriteria:
+    id: u32
+    description: String
+    amount: u32
+    operator: Option<AchievementCriteriaOperator>
+    child_criteria: Option<Vec<AchievementCriteria>>
+  AchievementCriteriaOperator:
+    type_.type: String
+    name: String
+
+AchievementCategoriesIndex:
+  endpoint: data/wow/achievement-category/index
+  namespace: Static
+  description: Returns an index of achievement categories.
+  struct:
+      links._links: LinksRef
+      categories: Vec<NameAndId>
+      root_categories: Vec<NameAndId>
+      guild_categories: Vec<NameAndId>
+
+AchievementCategory:
+  endpoint: data/wow/achievement-category/{id}
+  url_args: Id
+  namespace: Static
+  description: Returns a single achievement category by ID.
+  struct:
+      links._links: LinksRef
+      id: u32
+      name: String
+      achievements: Vec<NameAndId>
+      subcategories: Option<Vec<NameAndId>>
+      parent_category: Option<NameAndId>
+      is_guild_category: bool
+      aggregates_by_faction: AggregatesByFaction
+      display_order: u32
+
+AchievementsIndex:
+  endpoint: data/wow/achievement/index
+  namespace: Static
+  description: Returns an index of achievements.
+  struct:
+      links._links: LinksRef
+      achievements: Vec<NameAndId>
+
+Achievement:
+  endpoint: data/wow/achievement/{id}
+  url_args: Id
+  namespace: Static
+  description: Returns a single achievement by ID.
+  struct:
+      links._links: LinksRef
+      id: u32
+      category: NameAndId
+      name: String
+      description: String
+      points: u32
+      is_account_wide: bool
+      criteria: AchievementCriteria
+      prerequisite_achievement: Option<NameAndId>
+      next_achievement: Option<NameAndId>
+      reward_description: Option<String>
+      media: KeyAndId
+      display_order: u32
+
+AchievementMedia:
+  endpoint: data/wow/media/achievement/{id}
+  url_args: Id
+  namespace: Static
+  description: Returns media for an achievement by ID.
+  struct:
+      links._links: LinksRef
+      assets: Vec<Asset>
+      id: u32

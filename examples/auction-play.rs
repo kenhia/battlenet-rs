@@ -86,7 +86,6 @@ Examples of each are shown below. Several of the fields may be omitted.
 
 */
 
-
 fn main() {
     let file = std::fs::File::open("./data/auctions-small.json").unwrap();
     let data = serde_json::from_reader::<_, Auctions>(file).unwrap();
