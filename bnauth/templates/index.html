@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>bnauth — Battle.net OAuth</title></head>
+<body>
+  <h1>Battle.net User Authorization</h1>
+  {% if token_status and token_status.exists %}
+    <p>Token active — scope: <strong>{{ token_status.scope }}</strong>,
+       expires in ~{{ token_status.expires_in_hours }}h</p>
+    <a href="{{ url_for('authorize') }}"><button>Re-authorize</button></a>
+  {% else %}
+    <p>No active user token.</p>
+    <a href="{{ url_for('authorize') }}"><button>Get Battle.net Auth</button></a>
+  {% endif %}
+</body>
+</html>

@@ -5,6 +5,9 @@ pub mod namespace;
 pub mod region;
 pub mod wow_models;
 
+#[cfg(feature = "redis")]
+pub mod user_token;
+
 #[cfg(test)]
 mod tests {
     // use super::*;

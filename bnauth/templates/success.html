@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>bnauth — Success</title></head>
+<body>
+  <h1>Authorization Successful</h1>
+  <p>Token stored in Redis.</p>
+  <ul>
+    <li>Scope: <strong>{{ scope }}</strong></li>
+    <li>Expires in ~{{ expires_in_hours }} hours</li>
+  </ul>
+  <a href="{{ url_for('index') }}">Back</a>
+</body>
+</html>

@@ -152,3 +152,53 @@ Currently implemented:
 - **Character Profile API** (2 endpoints): Summary, Status
 - **Connected Realm API** (2 endpoints): Index, by ID
 - **WoW Token API** (1 endpoint): Token Index
+
+## User Token (bnauth + Redis)
+
+For user-scoped endpoints (account profile, character list, collections) you
+need a user OAuth token obtained via the `bnauth` Flask app.
+
+### Running bnauth
+
+```sh
+cd bnauth
+uv run python -m bnauth.app
+```
+
+Visit `http://localhost:5050`, click **Get Battle.net Auth**, log in, and the
+token is saved to Redis automatically.
+
+### Reading the User Token from Rust
+
+Enable the `redis` feature:
+
+```toml
+[dependencies]
+battlenet-rs = { path = "../battlenet-rs", features = ["redis"] }
+```
+
+```rust
+use battlenet_rs::user_token::read_user_token;
+use battlenet_rs::errors::BattleNetClientError;
+
+fn main() {
+    match read_user_token() {
+        Ok(token) => {
+            println!("Token: {}", token.access_token);
+            println!("Expires at: {}", token.expires_at);
+            println!("Scope: {}", token.scope);
+        }
+        Err(BattleNetClientError::UserTokenNotAvailable) => {
+            eprintln!("No user token — run bnauth to authorize");
+        }
+        Err(BattleNetClientError::RedisError(e)) => {
+            eprintln!("Redis connection failed: {e}");
+        }
+        Err(e) => eprintln!("Error: {e}"),
+    }
+}
+```
+
+The user token is separate from the client credentials token. The client token
+is used automatically by `BattleNetClient` for Game Data endpoints; the user
+token must be read explicitly via `read_user_token()` for user-scoped calls.

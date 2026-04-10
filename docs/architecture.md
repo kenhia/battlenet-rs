@@ -13,6 +13,7 @@ src/
 ├── errors.rs            # Error types (BattleNetClientError enum)
 ├── namespace.rs         # WowNamespace enum (Static, Dynamic, Profile)
 ├── region.rs            # BattleNetRegion enum (US, EU, KR, TW, CN)
+├── user_token.rs        # [redis feature] UserAccessToken + Redis reader
 └── wow_models/
     ├── mod.rs (wow_models.rs)  # Module root — UrlArgs, GenerateUrl trait, prelude
     ├── core_structs.rs         # 16 shared serde structs (HrefLink, NameAndId, Realm, etc.)
@@ -22,6 +23,19 @@ src/
     ├── connected_realm.rs      # 2 endpoint models with GenerateUrl impls
     ├── wow_token.rs            # 1 endpoint model via bendpoint macro
     └── auction_house.rs        # Model structs only (orphaned — not declared as module)
+
+bnauth/                          # Python Flask app — OAuth user token helper
+├── pyproject.toml               # uv-managed project metadata + deps
+├── bnauth/
+│   ├── __init__.py
+│   └── app.py                   # Flask routes (/  /authorize  /callback)
+├── templates/
+│   ├── index.html               # Landing page with auth button
+│   ├── success.html             # Token stored confirmation
+│   └── error.html               # Error display with retry link
+└── tests/
+    ├── test_app.py              # Unit tests (10 tests)
+    └── test_e2e.py              # End-to-end Redis + API test
 
 model-macro/
 └── src/
@@ -72,6 +86,46 @@ string instead of a deserialized struct.
 
 The client uses `client_credentials` grant type (no user authorization needed
 for Game Data and Profile endpoints).
+
+## User Token Flow (bnauth + Redis)
+
+User-scoped API endpoints (character profile, collections, etc.) require a
+separate OAuth authorization code flow that involves a browser login. This
+is handled by the `bnauth` Flask app and consumed by `battlenet-rs` through
+the optional `redis` cargo feature.
+
+```text
+Developer on cleo (browser)
+  │
+  ▼
+bnauth Flask app (http://localhost:5050)
+  │
+  ├─ GET /authorize → redirect to Battle.net OAuth
+  │     scope: wow.profile openid
+  │     state: random CSRF token (Flask session)
+  │
+  ├─ GET /callback?code=...&state=...
+  │     ├─ Validate state (CSRF check)
+  │     ├─ POST https://oauth.battle.net/token (HTTP Basic auth)
+  │     └─ Store 5 keys in Redis with TTL:
+  │          bnauth:access_token, bnauth:token_type,
+  │          bnauth:expires_at, bnauth:scope, bnauth:obtained_at
+  │
+  └─ Redis on rpi53 ←── read by ──→ battlenet-rs on kubs0
+                                      │
+                                      └─ user_token::read_user_token()
+                                           ├─ GET bnauth:access_token
+                                           └─ Returns UserAccessToken or error
+```
+
+**Token separation**: The client credentials token (`src/auth.rs`) and user
+access token (`src/user_token.rs`) are distinct types with no runtime mixing.
+The client token is used for Game Data endpoints; the user token is used for
+Profile endpoints that require user authorization.
+
+**Redis key lifecycle**: All 5 keys share the same TTL (~24h). When they
+expire, `read_user_token()` returns `UserTokenNotAvailable`. The user
+re-authorizes by visiting bnauth again; `SET ... EX` inherently overwrites.
 
 ## `bendpoint` Proc Macro
 

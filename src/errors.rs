@@ -20,6 +20,15 @@ pub enum BattleNetClientError {
     #[error("error accessing client token mutex: {0}")]
     ClientTokenMutex(String),
 
+    /// User token key not found in Redis (expired or never set).
+    #[error("user token is not available")]
+    UserTokenNotAvailable,
+
+    /// Redis connection or command failure.
+    #[cfg(feature = "redis")]
+    #[error("{0}")]
+    RedisError(#[from] redis::RedisError),
+
     /// An error, but we don't know what it is (should only be used during dev)
     #[error("unknown error")]
     Unknown,

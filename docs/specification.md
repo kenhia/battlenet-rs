@@ -53,7 +53,7 @@ The project is governed by 5 constitutional principles:
 
 ### 001: Repo Baseline Audit & BattleNet API Research
 
-**Status**: In Progress
+**Status**: Complete
 **Branch**: `001-repo-baseline-audit`
 **Purpose**: Establish a green CI baseline, document the current repository
 state, research the current BattleNet API surface, update dependencies, and
@@ -66,7 +66,30 @@ Key outcomes:
 - Dependencies refreshed to latest compatible versions
 - Architecture, installation, and usage documentation created
 
+### 002: bnauth — Battle.net User OAuth Helper
+
+**Status**: In Progress
+**Branch**: `002-bnauth-oauth-helper`
+**Purpose**: Enable user-scoped Battle.net API access by building a Python
+Flask app that performs the OAuth authorization code flow and stores the
+resulting token in Redis for cross-machine consumption.
+
+Key outcomes:
+- Python Flask app (`bnauth/`) performs OAuth authorization code flow via browser
+- User access token stored in Redis on `rpi53` with `bnauth:` key prefix and
+  TTL matching token lifetime (~24h)
+- Feature-gated Rust module (`src/user_token.rs`) reads the token from Redis
+  behind the `redis` cargo feature flag
+- User token remains architecturally separate from the client credentials token
+- CN region explicitly excluded from bnauth scope
+
+Deliverables:
+1. **bnauth Flask app** — 3 routes (`/`, `/authorize`, `/callback`), Jinja2
+   templates, environment-driven config, fail-fast on missing env vars
+2. **Rust Redis token reader** — `UserAccessToken` struct,
+   `read_user_token()` function, `RedisError` and `UserTokenNotAvailable`
+   error variants
+
 ## Planned Work
 
-- **002 (planned)**: Local database tool for WoW character data — populate and
-  maintain a local database of information on WoW characters
+- **003 (planned)**: Local database tool for WoW character data

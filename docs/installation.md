@@ -58,6 +58,59 @@ BATTLENET_TEST_WOW_TOKEN_MAX=380000
 
 > Token min/max are in gold. The API returns prices in copper; tests convert automatically.
 
+## bnauth OAuth Helper (optional)
+
+The `bnauth/` sub-project provides browser-based OAuth for user-scoped API
+access. Required only if you need user profile endpoints (character list,
+collections, etc.).
+
+### Prerequisites
+
+- **Python 3.13+** with [uv](https://docs.astral.sh/uv/) package manager
+- **Redis server** accessible from both the auth machine and the API consumer
+- **Battle.net Developer Portal**: Add `http://localhost:5050/callback` as an
+  allowed redirect URI in your application settings
+
+### Setup
+
+```sh
+cd bnauth
+cp .env-EXAMPLE .env
+```
+
+Edit `bnauth/.env` with your values:
+
+```env
+# Required
+BATTLENET_CLIENT_ID="your_client_id_here"
+BATTLENET_CLIENT_SECRET="your_client_secret_here"
+FLASK_SECRET_KEY="generate_a_random_secret"
+REDISCLI_AUTH="your_redis_password"
+
+# Optional (defaults shown)
+BATTLENET_REGION="us"
+BNAUTH_REDIS_HOST="rpi53"
+BNAUTH_REDIS_PORT="6379"
+BNAUTH_FLASK_PORT="5050"
+```
+
+Install dependencies:
+
+```sh
+cd bnauth
+uv sync
+```
+
+### Rust Redis Feature (optional)
+
+To read user tokens from Redis in Rust code:
+
+```sh
+cargo build --features redis
+```
+
+Required env vars for the Rust reader: `BNAUTH_REDIS_HOST`, `BNAUTH_REDIS_PORT`, `REDISCLI_AUTH`.
+
 ## Build
 
 ```sh
