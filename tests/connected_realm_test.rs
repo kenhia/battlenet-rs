@@ -1,3 +1,5 @@
+#![cfg(feature = "wow")]
+
 use battlenet_rs::wow_models::prelude::*;
 
 mod common;

@@ -3,6 +3,8 @@ pub mod client;
 pub mod errors;
 pub mod namespace;
 pub mod region;
+
+#[cfg(feature = "wow")]
 pub mod wow_models;
 
 #[cfg(feature = "redis")]

@@ -113,9 +113,39 @@ Required env vars for the Rust reader: `BNAUTH_REDIS_HOST`, `BNAUTH_REDIS_PORT`,
 
 ## Build
 
+Default build (core only — client, auth, region):
+
 ```sh
 cargo build
 ```
+
+### Feature Flags
+
+Enable WoW Game Data APIs:
+
+```sh
+cargo build --features wow
+```
+
+Enable WoW Game Data + Profile APIs:
+
+```sh
+cargo build --features wow,user
+```
+
+If adding as a dependency:
+
+```toml
+[dependencies]
+battlenet-rs = { path = "../battlenet-rs", features = ["wow"] }        # Game Data
+battlenet-rs = { path = "../battlenet-rs", features = ["wow", "user"] } # + Profile
+```
+
+| Flag | Purpose |
+|------|---------|
+| `wow` | WoW Game Data API models (~130 endpoints) |
+| `user` | WoW Profile API models (~37 endpoints; requires `wow`) |
+| `redis` | Redis-based user token reader |
 
 ## Run Tests
 

@@ -14,15 +14,62 @@ src/
 ├── namespace.rs         # WowNamespace enum (Static, Dynamic, Profile)
 ├── region.rs            # BattleNetRegion enum (US, EU, KR, TW, CN)
 ├── user_token.rs        # [redis feature] UserAccessToken + Redis reader
-└── wow_models/
+└── wow_models/          # [wow feature] All WoW Game Data + Profile models
     ├── mod.rs (wow_models.rs)  # Module root — UrlArgs, GenerateUrl trait, prelude
-    ├── core_structs.rs         # 16 shared serde structs (HrefLink, NameAndId, Realm, etc.)
+    ├── core_structs.rs         # Shared serde structs (HrefLink, NameAndId, Realm, etc.)
     ├── core_other.rs           # Re-exports (currently minimal)
-    ├── achievement.rs          # 5 endpoint models with GenerateUrl impls
-    ├── character_profile.rs    # 2 endpoint models (1 via bendpoint macro, 1 manual)
-    ├── connected_realm.rs      # 2 endpoint models with GenerateUrl impls
-    ├── wow_token.rs            # 1 endpoint model via bendpoint macro
-    └── auction_house.rs        # Model structs only (orphaned — not declared as module)
+    │
+    │  ── Game Data modules (33, gated by `wow` feature) ──
+    ├── achievement.rs          # Achievement endpoints (5)
+    ├── auction_house.rs        # Auction House endpoints (2)
+    ├── azerite_essence.rs      # Azerite Essence endpoints (4)
+    ├── connected_realm.rs      # Connected Realm endpoints (3)
+    ├── covenant.rs             # Covenant endpoints (7)
+    ├── creature.rs             # Creature endpoints (7)
+    ├── guild.rs                # Guild endpoints (4)
+    ├── heirloom.rs             # Heirloom endpoints (2)
+    ├── item.rs                 # Item endpoints (8)
+    ├── journal.rs              # Journal endpoints (8)
+    ├── media_search.rs         # Media Search endpoints (1)
+    ├── modified_crafting.rs    # Modified Crafting endpoints (5)
+    ├── mount.rs                # Mount endpoints (3)
+    ├── mythic_keystone.rs      # Mythic Keystone endpoints (12)
+    ├── pet.rs                  # Pet endpoints (6)
+    ├── playable_class.rs       # Playable Class endpoints (4)
+    ├── playable_race.rs        # Playable Race endpoints (2)
+    ├── playable_spec.rs        # Playable Specialization endpoints (3)
+    ├── power_type.rs           # Power Type endpoints (2)
+    ├── profession.rs           # Profession endpoints (6)
+    ├── pvp.rs                  # PvP Season + Tier endpoints (8)
+    ├── quest.rs                # Quest endpoints (8)
+    ├── realm.rs                # Realm endpoints (3)
+    ├── region_api.rs           # Region endpoints (2)
+    ├── reputation.rs           # Reputation endpoints (4)
+    ├── spell.rs                # Spell endpoints (3)
+    ├── talent.rs               # Talent endpoints (7)
+    ├── title.rs                # Title endpoints (2)
+    ├── toy.rs                  # Toy endpoints (2)
+    ├── wow_token.rs            # WoW Token endpoints (1)
+    │
+    │  ── Profile modules (17, gated by `user` feature) ──
+    ├── account_profile.rs      # Account Profile endpoints (9)
+    ├── character_achievements.rs
+    ├── character_appearance.rs
+    ├── character_collections.rs
+    ├── character_encounters.rs
+    ├── character_equipment.rs
+    ├── character_hunter_pets.rs
+    ├── character_media.rs
+    ├── character_mythic_keystone.rs
+    ├── character_professions.rs
+    ├── character_profile.rs
+    ├── character_pvp.rs
+    ├── character_quests.rs
+    ├── character_reputations.rs
+    ├── character_soulbinds.rs
+    ├── character_specializations.rs
+    ├── character_statistics.rs
+    └── character_titles.rs
 
 bnauth/                          # Python Flask app — OAuth user token helper
 ├── pyproject.toml               # uv-managed project metadata + deps
@@ -73,6 +120,35 @@ client.get_data::<T>(&url_args)          // T: Deserialize + GenerateUrl
 
 There is also `client.get_json::<T>(&url_args)` which returns the raw JSON
 string instead of a deserialized struct.
+
+## Profile API Token Flow
+
+Profile API endpoints (character data, account collections) require a user
+OAuth token instead of client credentials. The client provides parallel methods:
+
+```text
+client.get_data_with_token::<T>(&url_args, &user_token)
+client.get_json_with_token::<T>(&url_args, &user_token)
+```
+
+These use the same URL construction as `get_data` / `get_json` but substitute
+the user access token (from Redis via `read_user_token()`) in the Authorization
+header instead of the client credentials token.
+
+## Feature-Gated Module Tree
+
+Modules are conditionally compiled via cargo feature flags:
+
+| Feature | Gates | Depends On |
+|---------|-------|------------|
+| (none) | Core: `client`, `auth`, `errors`, `region`, `namespace` | — |
+| `wow` | `wow_models` module + all Game Data sub-modules (33) | — |
+| `user` | Profile sub-modules within `wow_models` (17) | `wow` |
+| `redis` | `user_token` module (Redis reader) | — |
+
+In `src/wow_models.rs`, the prelude re-exports are gated:
+- `#[cfg(feature = "wow")]` — all Game Data types
+- `#[cfg(feature = "user")]` — all Profile types
 
 ## OAuth Token Lifecycle
 
@@ -183,9 +259,17 @@ pub trait GenerateUrl {
 URL format: `{base_url}/{endpoint}?namespace={namespace}&locale={locale}`
 
 **UrlArgs variants**:
-- `UrlArgs::None` — Index endpoints (no parameters)
-- `UrlArgs::Id { id: u64 }` — Entity-by-ID endpoints
-- `UrlArgs::Player { realm_slug, name }` — Character-scoped endpoints
+| Variant | Fields | Used For |
+|---------|--------|----------|
+| `None` | — | Index endpoints (no parameters) |
+| `Id { id }` | `u64` | Entity-by-ID lookups |
+| `Player { realm_slug, name }` | 2× `String` | Character-scoped endpoints |
+| `Guild { realm_slug, name_slug }` | 2× `String` | Guild-scoped endpoints |
+| `TwoIds { id1, id2 }` | 2× `u64` | Two-ID endpoints (e.g. skill tier) |
+| `ThreeIds { id1, id2, id3 }` | 3× `u64` | Three-ID endpoints (e.g. leaderboard) |
+| `PlayerExtra { realm_slug, name, extra }` | 3× `String` | Character + sub-resource (e.g. PvP bracket) |
+| `TwoStrings { first, second }` | 2× `String` | Two-string paths (e.g. raid/faction) |
+| `Search { params }` | `Vec<(String, String)>` | Search endpoints with query params |
 
 ## Namespace / Region Handling
 

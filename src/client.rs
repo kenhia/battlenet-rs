@@ -1,8 +1,9 @@
+#[cfg(feature = "wow")]
+use crate::wow_models::{GenerateUrl, UrlArgs};
 use crate::{
     auth::AccessTokenResponse,
     errors::{BattleNetClientError, BattlenetClientResult},
     region::BattleNetRegion,
-    wow_models::{GenerateUrl, UrlArgs},
 };
 use serde::Deserialize;
 use std::env;
@@ -174,6 +175,7 @@ impl BattleNetClient {
         Ok(response)
     }
 
+    #[cfg(feature = "wow")]
     // Get data for the object
     pub async fn get_data<T>(&self, url_args: &UrlArgs) -> Result<T, BattleNetClientError>
     where
@@ -186,6 +188,7 @@ impl BattleNetClient {
         Ok(result)
     }
 
+    #[cfg(feature = "wow")]
     // Get the JSON string for the object
     pub async fn get_json<T>(&self, url_args: &UrlArgs) -> Result<String, BattleNetClientError>
     where
@@ -196,9 +199,129 @@ impl BattleNetClient {
         let json_text = response.text().await?;
         Ok(json_text)
     }
+
+    /// Send a request using a caller-provided bearer token (e.g., user OAuth token).
+    pub async fn send_request_with_token(
+        &self,
+        url: String,
+        token: &str,
+    ) -> BattlenetClientResult<reqwest::Response> {
+        let response = self.http.get(url).bearer_auth(token).send().await?;
+        Ok(response)
+    }
+
+    #[cfg(feature = "wow")]
+    /// Get typed data using a caller-provided bearer token.
+    pub async fn get_data_with_token<T>(
+        &self,
+        url_args: &UrlArgs,
+        token: &str,
+    ) -> Result<T, BattleNetClientError>
+    where
+        T: for<'a> Deserialize<'a> + GenerateUrl,
+    {
+        let url = T::url(self, url_args);
+        let response = self.send_request_with_token(url, token).await?;
+        let json_text = response.text().await?;
+        let result = json_to_struct(&json_text)?;
+        Ok(result)
+    }
+
+    #[cfg(feature = "wow")]
+    /// Get raw JSON using a caller-provided bearer token.
+    pub async fn get_json_with_token<T>(
+        &self,
+        url_args: &UrlArgs,
+        token: &str,
+    ) -> Result<String, BattleNetClientError>
+    where
+        T: GenerateUrl,
+    {
+        let url = T::url(self, url_args);
+        let response = self.send_request_with_token(url, token).await?;
+        let json_text = response.text().await?;
+        Ok(json_text)
+    }
 }
 
 pub fn json_to_struct<T: for<'a> Deserialize<'a>>(json: &str) -> Result<T, BattleNetClientError> {
     let result: T = serde_json::from_str(json)?;
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_client() -> BattleNetClient {
+        BattleNetClient::new(
+            BattleNetRegion::US,
+            "en_US",
+            "test_client_id",
+            "test_client_secret",
+        )
+    }
+
+    #[tokio::test]
+    async fn test_send_request_with_token_constructs_bearer_auth() {
+        // This test verifies the method exists and accepts the expected parameters.
+        // We can't easily test the actual HTTP call without a mock server,
+        // but we can verify it returns a network error (proving the request was attempted
+        // with the provided token, not the client-credentials flow).
+        let client = test_client();
+        let result = client
+            .send_request_with_token("http://localhost:1/test".to_string(), "fake_user_token")
+            .await;
+        // Should fail with a network error (connection refused), not a token error
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err, BattleNetClientError::ClientRequestFailed(_)));
+    }
+
+    #[cfg(feature = "wow")]
+    #[tokio::test]
+    async fn test_get_data_with_token_exists() {
+        use crate::wow_models::{GenerateUrl, UrlArgs};
+
+        // Minimal struct to test get_data_with_token compilation
+        #[derive(Debug, serde::Deserialize)]
+        #[allow(dead_code)]
+        struct DummyProfile {
+            id: u64,
+        }
+
+        impl GenerateUrl for DummyProfile {
+            fn url(_client: &BattleNetClient, _url_args: &UrlArgs) -> String {
+                "http://127.0.0.1:1/test".to_string()
+            }
+        }
+
+        let client = test_client();
+        let result: Result<DummyProfile, BattleNetClientError> = client
+            .get_data_with_token(&UrlArgs::None, "fake_token")
+            .await;
+        // Should fail with network error
+        assert!(result.is_err());
+    }
+
+    #[cfg(feature = "wow")]
+    #[tokio::test]
+    async fn test_get_json_with_token_exists() {
+        use crate::wow_models::{GenerateUrl, UrlArgs};
+
+        #[derive(Debug)]
+        struct DummyProfile;
+
+        impl GenerateUrl for DummyProfile {
+            fn url(_client: &BattleNetClient, _url_args: &UrlArgs) -> String {
+                "http://127.0.0.1:1/test".to_string()
+            }
+        }
+
+        let client = test_client();
+        let result: Result<String, BattleNetClientError> = client
+            .get_json_with_token::<DummyProfile>(&UrlArgs::None, "fake_token")
+            .await;
+        assert!(result.is_err());
+    }
 }

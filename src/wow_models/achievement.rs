@@ -1,12 +1,14 @@
+use crate::namespace::WowNamespace;
 use serde::Deserialize;
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
-use crate::namespace::WowNamespace;
 use crate::wow_models::{core_structs::*, GenerateUrl, UrlArgs};
 
-#[derive(Debug, Deserialize)]
-pub struct AchievementCategoriesIndex {
+use model_macro::bendpoint;
+
+#[bendpoint(endpoint = "data/wow/achievement-category/index" namespace = "static")]
+struct AchievementCategoriesIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub categories: Vec<NameAndId>,
@@ -14,23 +16,8 @@ pub struct AchievementCategoriesIndex {
     pub guild_categories: Vec<NameAndId>,
 }
 
-pub type AchievementCategoriesIndexResult =
-    Result<AchievementCategoriesIndex, BattleNetClientError>;
-pub type AchievementCategoriesIndexJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for AchievementCategoriesIndex {
-    fn url(client: &BattleNetClient, _: &UrlArgs) -> String {
-        let endpoint = "data/wow/achievement-category/index";
-        let namespace = WowNamespace::Static.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AchievementCategory {
+#[bendpoint(endpoint = "data/wow/achievement-category/{id}" url_args = "Id" namespace = "static")]
+struct AchievementCategory {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub id: u32,
@@ -43,48 +30,15 @@ pub struct AchievementCategory {
     pub display_order: u32,
 }
 
-pub type AchievementCategoryResult = Result<AchievementCategory, BattleNetClientError>;
-pub type AchievementCategoryJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for AchievementCategory {
-    fn url(client: &BattleNetClient, url_args: &UrlArgs) -> String {
-        let id = match url_args {
-            UrlArgs::Id { id } => id,
-            _ => panic!("UrlArgs::Id expected"),
-        };
-
-        let endpoint = format!("data/wow/achievement-category/{id}");
-        let namespace = WowNamespace::Static.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AchievementsIndex {
+#[bendpoint(endpoint = "data/wow/achievement/index" namespace = "static")]
+struct AchievementsIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub achievements: Vec<NameAndId>,
 }
 
-pub type AchievementsIndexResult = Result<AchievementsIndex, BattleNetClientError>;
-pub type AchievementsIndexJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for AchievementsIndex {
-    fn url(client: &BattleNetClient, _: &UrlArgs) -> String {
-        let endpoint = "data/wow/achievement/index";
-        let namespace = WowNamespace::Static.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Achievement {
+#[bendpoint(endpoint = "data/wow/achievement/{id}" url_args = "Id" namespace = "static")]
+struct Achievement {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub id: u32,
@@ -101,48 +55,10 @@ pub struct Achievement {
     pub display_order: u32,
 }
 
-pub type AchievementResult = Result<Achievement, BattleNetClientError>;
-pub type AchievementJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for Achievement {
-    fn url(client: &BattleNetClient, url_args: &UrlArgs) -> String {
-        let id = match url_args {
-            UrlArgs::Id { id } => id,
-            _ => panic!("UrlArgs::Id expected"),
-        };
-
-        let endpoint = format!("data/wow/achievement/{id}");
-        let namespace = WowNamespace::Static.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AchievementMedia {
+#[bendpoint(endpoint = "data/wow/media/achievement/{id}" url_args = "Id" namespace = "static")]
+struct AchievementMedia {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub assets: Vec<Asset>,
     pub id: u32,
-}
-
-pub type AchievementMediaResult = Result<AchievementMedia, BattleNetClientError>;
-pub type AchievementMediaJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for AchievementMedia {
-    fn url(client: &BattleNetClient, url_args: &UrlArgs) -> String {
-        let id = match url_args {
-            UrlArgs::Id { id } => id,
-            _ => panic!("UrlArgs::Id expected"),
-        };
-
-        let endpoint = format!("data/wow/media/achievement/{id}");
-        let namespace = WowNamespace::Static.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
 }

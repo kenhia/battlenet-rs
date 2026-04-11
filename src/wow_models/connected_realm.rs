@@ -5,29 +5,17 @@ use crate::errors::BattleNetClientError;
 use crate::namespace::WowNamespace;
 use crate::wow_models::{core_structs::*, GenerateUrl, UrlArgs};
 
-#[derive(Debug, Deserialize)]
-pub struct ConnectedRealmsIndex {
+use model_macro::bendpoint;
+
+#[bendpoint(endpoint = "data/wow/connected-realm/index" namespace = "dynamic")]
+struct ConnectedRealmsIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub connected_realms: Vec<HrefLink>,
 }
 
-pub type ConnectedRealmsIndexResult = Result<ConnectedRealmsIndex, BattleNetClientError>;
-pub type ConnectedRealmsIndexJsonResult = Result<String, BattleNetClientError>;
-
-impl GenerateUrl for ConnectedRealmsIndex {
-    fn url(client: &BattleNetClient, _: &UrlArgs) -> String {
-        let endpoint = "data/wow/connected-realm/index";
-        let namespace = WowNamespace::Dynamic.to_region_string(&client.region);
-        let base = client.region.base_url();
-        let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ConnectedRealm {
+#[bendpoint(endpoint = "data/wow/connected-realm/{id}" url_args = "Id" namespace = "dynamic")]
+struct ConnectedRealm {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub id: u32,
@@ -37,21 +25,34 @@ pub struct ConnectedRealm {
     pub realms: Vec<RealmLong>,
 }
 
-pub type ConnectedRealmResult = Result<ConnectedRealm, BattleNetClientError>;
-pub type ConnectedRealmJsonResult = Result<String, BattleNetClientError>;
+// --- Connected Realm Search ---
 
-impl GenerateUrl for ConnectedRealm {
+#[derive(Debug, Deserialize)]
+pub struct ConnectedRealmSearchData {
+    pub id: u32,
+    pub has_queue: bool,
+    pub population: TypeAndName,
+    pub realms: Vec<RealmLong>,
+}
+
+pub type ConnectedRealmSearchResult =
+    Result<SearchResult<ConnectedRealmSearchData>, BattleNetClientError>;
+pub type ConnectedRealmSearchJsonResult = Result<String, BattleNetClientError>;
+
+impl GenerateUrl for SearchResult<ConnectedRealmSearchData> {
     fn url(client: &BattleNetClient, url_args: &UrlArgs) -> String {
-        let id = match url_args {
-            UrlArgs::Id { id } => id,
-            _ => panic!("UrlArgs::Id expected"),
+        let params = match url_args {
+            UrlArgs::Search { params } => params,
+            _ => panic!("UrlArgs::Search expected"),
         };
-
-        let endpoint = format!("data/wow/connected-realm/{id}");
+        let endpoint = "data/wow/search/connected-realm";
         let namespace = WowNamespace::Dynamic.to_region_string(&client.region);
         let base = client.region.base_url();
         let locale = &client.locale;
-
-        format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
+        let mut url = format!("{base}/{endpoint}?namespace={namespace}&locale={locale}");
+        for (key, value) in params {
+            url.push_str(&format!("&{key}={value}"));
+        }
+        url
     }
 }

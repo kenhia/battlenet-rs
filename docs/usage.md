@@ -145,13 +145,68 @@ when creating the client.
 ## Available Endpoints
 
 See [ModelImplementProgress.md](../ModelImplementProgress.md) for the full list
-of implemented and planned API endpoints.
+of implemented API endpoints.
 
-Currently implemented:
-- **Achievement API** (5 endpoints): Categories Index, Category, Index, Achievement, Media
-- **Character Profile API** (2 endpoints): Summary, Status
-- **Connected Realm API** (2 endpoints): Index, by ID
-- **WoW Token API** (1 endpoint): Token Index
+**Game Data APIs** (feature `wow`): ~130 endpoints across 33 modules — achievements,
+auction house, creatures, items, mounts, mythic keystone, professions, PvP, quests,
+realms, talents, and more.
+
+**Profile APIs** (feature `wow,user`): ~37 endpoints across 17 modules — account
+profile, character achievements, collections, encounters, equipment, professions,
+PvP, quests, reputations, and more.
+
+## Game Data Example
+
+Enable with `--features wow`:
+
+```rust
+use battlenet_rs::client::BattleNetClient;
+use battlenet_rs::wow_models::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let _ = dotenvy::from_filename(".env");
+    let client = BattleNetClient::new_from_environment();
+
+    // Fetch all mounts
+    let result: MountsIndexResult = client.get_data(&UrlArgs::None).await;
+
+    // Fetch a specific item by ID
+    let result: ItemResult = client.get_data(&UrlArgs::Id { id: 19019 }).await;
+}
+```
+
+## Profile API Example
+
+Enable with `--features wow,user,redis`:
+
+```rust
+use battlenet_rs::client::BattleNetClient;
+use battlenet_rs::user_token::read_user_token;
+use battlenet_rs::wow_models::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let _ = dotenvy::from_filename(".env");
+    let client = BattleNetClient::new_from_environment();
+    let token = read_user_token().expect("Run bnauth first");
+
+    let args = UrlArgs::Player {
+        realm_slug: "trollbane".to_string(),
+        name: "belarsa".to_string(),
+    };
+    let result: CharacterEquipmentSummaryResult =
+        client.get_data_with_token(&args, &token.access_token).await;
+}
+```
+
+### Feature Flag Reference
+
+| Flag | Enables | Dependency |
+|------|---------|------------|
+| `wow` | Game Data API models (33 modules, ~130 endpoints) | — |
+| `user` | Profile API models (17 modules, ~37 endpoints) | `wow` |
+| `redis` | Redis user token reader | — |
 
 ## User Token (bnauth + Redis)
 

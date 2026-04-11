@@ -7,7 +7,13 @@ edition = "2021"
 
 [features]
 default = []
+wow = []
+user = []
 redis = ["dep:redis"]
+wow-classic = []
+diablo = []
+hearthstone = []
+starcraft = []
 
 [dependencies]
 chrono = "0.4.38"
@@ -23,3 +29,75 @@ tokio = { version = "1.37.0", features = ["full"] }
 
 # model_macro helps generate boilerplate code for the models
 model-macro = { path = "./model-macro" }
+
+[[example]]
+name = "get-client-token"
+required-features = ["wow"]
+
+[[example]]
+name = "char-profile"
+required-features = ["wow", "user"]
+
+[[example]]
+name = "auction-play"
+required-features = ["wow"]
+
+[[example]]
+name = "mounts"
+required-features = ["wow"]
+
+[[example]]
+name = "items"
+required-features = ["wow"]
+
+[[example]]
+name = "achievements"
+required-features = ["wow"]
+
+[[example]]
+name = "professions"
+required-features = ["wow"]
+
+[[example]]
+name = "pvp-seasons"
+required-features = ["wow"]
+
+[[example]]
+name = "realms"
+required-features = ["wow"]
+
+[[example]]
+name = "creatures"
+required-features = ["wow"]
+
+[[example]]
+name = "spells"
+required-features = ["wow"]
+
+[[example]]
+name = "talents"
+required-features = ["wow"]
+
+[[example]]
+name = "pets"
+required-features = ["wow"]
+
+[[example]]
+name = "mythic-keystone"
+required-features = ["wow"]
+
+[[example]]
+name = "auctions"
+required-features = ["wow"]
+
+[[example]]
+name = "account-profile"
+required-features = ["wow", "user"]
+
+[[example]]
+name = "character-collections"
+required-features = ["wow", "user"]
+
+[[example]]
+name = "character-equipment"
+required-features = ["wow", "user"]

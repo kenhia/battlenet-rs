@@ -19,11 +19,22 @@ with automatic OAuth token management.
 
 ## Current State
 
-The library is functional with 10 implemented endpoints covering 4 API
-categories (Achievement, Character Profile, Connected Realm, WoW Token). The
-full BattleNet API surface includes approximately 100+ endpoints across 30+
-categories. See [ModelImplementProgress.md](../ModelImplementProgress.md) for
-the complete inventory.
+The library covers ~167 endpoints across 50 API categories (30 Game Data + 18
+Profile + core). All endpoint models are gated behind cargo feature flags:
+`wow` for Game Data APIs, `user` (requires `wow`) for Profile APIs. See
+[ModelImplementProgress.md](../ModelImplementProgress.md) for the complete
+inventory.
+
+### Feature Flags
+
+| Flag | Purpose |
+|------|---------|
+| `wow` | Enable WoW Game Data API models (~130 endpoints across 33 modules) |
+| `user` | Enable WoW Profile API models (~37 endpoints across 17 modules; requires `wow`) |
+| `redis` | Enable Redis-based user token reader (`src/user_token.rs`) |
+| `stubs` | Reserved for future classic/other game stubs |
+
+Default (no features) = core client, auth, region, namespace, and error types only.
 
 ## Architecture
 
@@ -68,7 +79,7 @@ Key outcomes:
 
 ### 002: bnauth — Battle.net User OAuth Helper
 
-**Status**: In Progress
+**Status**: Complete
 **Branch**: `002-bnauth-oauth-helper`
 **Purpose**: Enable user-scoped Battle.net API access by building a Python
 Flask app that performs the OAuth authorization code flow and stores the
@@ -90,6 +101,18 @@ Deliverables:
    `read_user_token()` function, `RedisError` and `UserTokenNotAvailable`
    error variants
 
-## Planned Work
+### 003: WoW Game Data & Profile API Models
 
-- **003 (planned)**: Local database tool for WoW character data
+**Status**: Complete
+**Branch**: `003-lib-wow-examples`
+**Purpose**: Implement comprehensive WoW API coverage with feature-gated
+modules, extended UrlArgs, user-token client methods, and working examples.
+
+Key outcomes:
+- Feature flags (`wow`, `user`, `redis`, `stubs`) gate module compilation
+- 33 Game Data model modules (~130 endpoints) behind `wow` flag
+- 17 Profile API model modules (~37 endpoints) behind `user` flag
+- UrlArgs extended with Guild, TwoIds, ThreeIds, PlayerExtra, TwoStrings, Search variants
+- `get_data_with_token` / `get_json_with_token` client methods for Profile APIs
+- 15 runnable examples covering achievements, auctions, characters, items, mounts, etc.
+- Updated pygen code generator for bulk model creation

@@ -20,10 +20,10 @@ Follow-up TODOs: none
 
 Every change to the codebase MUST originate from a written specification.
 
-- Feature work MUST have a spec in `/spec/<###-feature-name>/spec.md` before
+- Feature work MUST have a spec in `/specs/<###-feature-name>/spec.md` before
   any implementation begins.
 - Ad-hoc or unplanned changes MUST be recorded in the current active spec or
-  in `/spec/supplemental-spec.md` before (or immediately after, for truly
+  in `/specs/supplemental-spec.md` before (or immediately after, for truly
   trivial fixes) merging.
 - During the polish phase of each spec/sprint, a combined specification MUST
   be written to or merged into `/docs/specification.md`.
@@ -107,7 +107,7 @@ The following directories MUST be used as indicated. Create them if absent.
 | `.scratch`      | Temporary files created by the developer during exploration    | ✅ Yes          |
 | `docs/`         | Project documentation (architecture, install, usage, spec)     | No              |
 | `poc-ex/`       | Source for proofs-of-concept and exploratory code              | No              |
-| `spec/`         | Iteration/sprint specs (one sub-directory per feature/sprint)  | No              |
+| `specs/`        | Iteration/sprint specs (one sub-directory per feature/sprint)  | No              |
 | `src/`          | Production library source                                      | No              |
 | `tests/`        | Integration and contract tests                                 | No              |
 | `examples/`     | Runnable usage examples                                        | No              |

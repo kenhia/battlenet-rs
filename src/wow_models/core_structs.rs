@@ -116,3 +116,54 @@ pub struct AchievementCriteriaOperator {
     pub type_: String,
     pub name: String,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct KeyHref {
+    pub key: HrefLink,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Media {
+    pub key: HrefLink,
+    pub id: u64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SearchResult<T> {
+    pub page: u32,
+    #[serde(alias = "pageSize")]
+    pub page_size: u32,
+    #[serde(alias = "maxPageSize")]
+    pub max_page_size: u32,
+    #[serde(alias = "pageCount")]
+    pub page_count: u32,
+    pub results: Vec<SearchResultEntry<T>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SearchResultEntry<T> {
+    pub key: HrefLink,
+    pub data: T,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_search_result_empty_results() {
+        let json = r#"{
+            "page": 1,
+            "pageSize": 100,
+            "maxPageSize": 1000,
+            "pageCount": 0,
+            "results": []
+        }"#;
+        let result: SearchResult<serde_json::Value> = serde_json::from_str(json).unwrap();
+        assert_eq!(result.page, 1);
+        assert_eq!(result.page_size, 100);
+        assert_eq!(result.max_page_size, 1000);
+        assert_eq!(result.page_count, 0);
+        assert!(result.results.is_empty());
+    }
+}
