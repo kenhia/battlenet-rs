@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -15,7 +15,7 @@ struct CharacterMythicKeystoneProfileIndex {
     pub seasons: Option<Vec<HrefLink>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct MythicKeystoneRun {
     pub completed_timestamp: u64,
     pub duration: u64,
@@ -23,7 +23,7 @@ pub struct MythicKeystoneRun {
     pub dungeon: NameAndId,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterMythicKeystoneSeason {
     #[serde(alias = "_links")]
     pub links: LinksRef,

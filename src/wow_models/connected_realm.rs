@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -27,7 +27,7 @@ struct ConnectedRealm {
 
 // --- Connected Realm Search ---
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConnectedRealmSearchData {
     pub id: u32,
     pub has_queue: bool,

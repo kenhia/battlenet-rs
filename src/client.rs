@@ -3,12 +3,13 @@ use crate::wow_models::{GenerateUrl, UrlArgs};
 use crate::{
     auth::AccessTokenResponse,
     errors::{BattleNetClientError, BattlenetClientResult},
+    rate_limiter::{RateLimiter, RateLimiterConfig},
     region::BattleNetRegion,
 };
 use serde::Deserialize;
 use std::env;
 use std::ops::Add;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use time::OffsetDateTime;
 
@@ -23,6 +24,7 @@ pub struct BattleNetClient {
     client_secret: String,
     access_token: Mutex<Option<String>>,
     expires_at: Mutex<time::OffsetDateTime>,
+    rate_limiter: Option<Arc<RateLimiter>>,
 }
 
 const DEFAULT_API_TIMEOUT_SECONDS: u64 = 5;
@@ -55,6 +57,7 @@ impl BattleNetClient {
             client_secret: client_secret.to_string(),
             access_token: Mutex::new(None),
             expires_at: Mutex::new(time::OffsetDateTime::now_utc()),
+            rate_limiter: None,
         }
     }
 
@@ -94,6 +97,12 @@ impl BattleNetClient {
         }
 
         Self::new_with_timeout(region, &locale, &client_id, &client_secret, timeout)
+    }
+
+    /// Attach a rate limiter to this client.
+    pub fn with_rate_limiter(mut self, config: RateLimiterConfig) -> Self {
+        self.rate_limiter = Some(Arc::new(RateLimiter::new(config)));
+        self
     }
 
     /// Get a mutable copy of the client's access token. If the token has not
@@ -170,6 +179,9 @@ impl BattleNetClient {
 
     /// send a request to Battlenet
     pub async fn send_request(&self, url: String) -> BattlenetClientResult<reqwest::Response> {
+        if let Some(ref limiter) = self.rate_limiter {
+            limiter.acquire().await;
+        }
         let token = self.get_access_token().await?;
         let response = self.http.get(url).bearer_auth(token).send().await?;
         Ok(response)
@@ -206,6 +218,9 @@ impl BattleNetClient {
         url: String,
         token: &str,
     ) -> BattlenetClientResult<reqwest::Response> {
+        if let Some(ref limiter) = self.rate_limiter {
+            limiter.acquire().await;
+        }
         let response = self.http.get(url).bearer_auth(token).send().await?;
         Ok(response)
     }

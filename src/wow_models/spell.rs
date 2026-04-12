@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -31,7 +31,7 @@ struct SpellMedia {
 
 // --- Spell Search ---
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SpellSearchData {
     pub id: u32,
     pub name: NameAndId,

@@ -16,4 +16,13 @@ impl WowNamespace {
         };
         format!("{pre}-{r}")
     }
+
+    /// Returns the cache namespace string: "static", "dynamic", or "profile".
+    pub fn as_cache_str(&self) -> &'static str {
+        match self {
+            Self::Static => "static",
+            Self::Dynamic => "dynamic",
+            Self::Profile => "profile",
+        }
+    }
 }

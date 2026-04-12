@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -15,7 +15,7 @@ struct CharacterCollectionsIndex {
     pub mounts: HrefLink,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterCollectionMount {
     pub mount: NameAndId,
     pub is_useable: Option<bool>,
@@ -28,7 +28,7 @@ struct CharacterMountsCollectionSummary {
     pub mounts: Vec<CharacterCollectionMount>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterCollectionPet {
     pub species: NameAndId,
     pub level: u32,
@@ -49,7 +49,7 @@ struct CharacterHeirloomsCollectionSummary {
     pub heirlooms: Vec<NameAndId>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterCollectionToy {
     pub toy: NameAndId,
 }

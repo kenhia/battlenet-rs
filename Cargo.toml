@@ -10,22 +10,27 @@ default = []
 wow = []
 user = []
 redis = ["dep:redis"]
+db-sqlite = ["dep:sqlx", "sqlx/sqlite"]
+db-postgres = ["dep:sqlx", "sqlx/postgres", "sqlx/tls-native-tls"]
 wow-classic = []
 diablo = []
 hearthstone = []
 starcraft = []
 
 [dependencies]
+async-trait = "0.1"
 chrono = "0.4.38"
 dotenvy = "0.15.7"
+log = "0.4"
 num-format = "0.4.4"
 redis = { version = "0.27", optional = true }
 reqwest = { version = "0.12.4", features = ["multipart", "json"] }
 serde = { version = "1.0.201", features = ["derive"] }
 serde_json = "1.0.117"
+sqlx = { version = "0.8", optional = true, features = ["runtime-tokio", "chrono", "json"] }
 thiserror = "1.0.60"
 time = "0.3.36"
-tokio = { version = "1.37.0", features = ["full"] }
+tokio = { version = "1.44", features = ["full"] }
 
 # model_macro helps generate boilerplate code for the models
 model-macro = { path = "./model-macro" }
@@ -93,6 +98,10 @@ required-features = ["wow"]
 [[example]]
 name = "account-profile"
 required-features = ["wow", "user"]
+
+[[example]]
+name = "account-profile-cached"
+required-features = ["wow", "user", "redis", "db-sqlite"]
 
 [[example]]
 name = "character-collections"

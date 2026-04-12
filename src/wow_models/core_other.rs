@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::prelude::{HrefLink, LinksRef, TypeAndName, TypeAndValue};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PetItem {
     pub id: u64,
     pub modifiers: Option<Vec<TypeAndName>>,
@@ -12,7 +12,7 @@ pub struct PetItem {
     pub pet_species_id: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum AuctionItem {
     Pet {
@@ -31,7 +31,7 @@ pub enum AuctionItem {
     },
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Auction {
     pub id: u64,
     pub item: AuctionItem,
@@ -40,7 +40,7 @@ pub struct Auction {
     pub time_left: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Auctions {
     #[serde(alias = "_links")]
     pub links: LinksRef,

@@ -122,35 +122,16 @@ This single annotation generates `#[derive(Debug, Deserialize)]`, `pub` visibili
 
 - **WoW Classic** API coverage (feature flag `wow-classic` is stubbed)
 - **Other games** — Diablo, Hearthstone, StarCraft II (feature flags stubbed)
-- **Caching** — file or database-backed response caching
 - **Static namespace diffing** — detect changes in index endpoints
 - **Publishing to crates.io**
+
+## Blizzard API Terms of Use
+
+Use of Battle.net API data is subject to the
+[Blizzard Developer API Terms of Use](https://www.blizzard.com/en-us/legal/a2989b50-5f16-43b1-abec-2ae17cc09dd6/blizzard-developer-api-terms-of-use).
+Cached character data must be re-validated every 30 days per Section 2.R.
 
 ## License
 
 This project is not yet licensed. See [Initial Goals](docs/Initial-Goals.md)
 for the original vision.
-# battlenet-rs
-
-Early days, but at POC for a Rust implementation of a Battlenet data wrapper.
-
-## Goals
-
-### MVP
-
-- Implement and test all of World of Warcraft APIs
-- Implement and test all of World of Warcraft Classic APIs
-- Include example of rolling your own API call using this library
-    - Do at least `wow_token_index` and something with args
-    - Impetus is to show that the core client can be used for things that I'm
-        probably not going to take the time to implement (Diablo, Hearthcraft,
-        StarCraft II)
-- Set up the repo on GitHub with a good contributors doc (so folks that are
-    interested in the aforementioned games can do a PR)
-
-### Stretch
-
-- Implement caching to file and/or mongoDb
-- Scanning for updates to static namespace (update cache)
-    - Get associated index and compare to cached index
-    - Pull instance for new IDs (remove cached for removed IDs?)

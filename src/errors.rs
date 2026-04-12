@@ -29,6 +29,11 @@ pub enum BattleNetClientError {
     #[error("{0}")]
     RedisError(#[from] redis::RedisError),
 
+    /// Cache layer error.
+    #[cfg(any(feature = "db-sqlite", feature = "db-postgres"))]
+    #[error("cache error: {0}")]
+    CacheError(#[from] crate::cache::CacheError),
+
     /// An error, but we don't know what it is (should only be used during dev)
     #[error("unknown error")]
     Unknown,

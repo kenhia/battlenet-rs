@@ -207,6 +207,75 @@ async fn main() {
 | `wow` | Game Data API models (33 modules, ~130 endpoints) | — |
 | `user` | Profile API models (17 modules, ~37 endpoints) | `wow` |
 | `redis` | Redis user token reader | — |
+| `db-sqlite` | SQLite-backed API response cache | — |
+| `db-postgres` | PostgreSQL-backed API response cache | — |
+
+**Note**: `db-sqlite` and `db-postgres` are mutually exclusive.
+
+## Rate Limiting
+
+Attach a rate limiter to any `BattleNetClient` to stay within Blizzard's API limits:
+
+```rust
+use battlenet_rs::client::BattleNetClient;
+use battlenet_rs::rate_limiter::RateLimiterConfig;
+
+let client = BattleNetClient::new_from_environment()
+    .with_rate_limiter(RateLimiterConfig::default()); // 100/s, 36k/hr
+
+// Enable "nice" mode for shared environments (50/s)
+let config = RateLimiterConfig {
+    nice_mode: true,
+    ..Default::default()
+};
+let client = BattleNetClient::new_from_environment()
+    .with_rate_limiter(config);
+```
+
+## CachedClient (Database-Backed Caching)
+
+Enable with `--features db-sqlite` (or `db-postgres`). `CachedClient` wraps
+`BattleNetClient` and caches responses based on namespace policy:
+
+```rust
+use battlenet_rs::client::BattleNetClient;
+use battlenet_rs::cache::cached_client::CachedClient;
+use battlenet_rs::cache::sqlite::SqliteCacheStore;
+use battlenet_rs::wow_models::prelude::*;
+
+#[tokio::main]
+async fn main() {
+    let client = BattleNetClient::new_from_environment();
+    let store = SqliteCacheStore::new("sqlite:cache.db").await.unwrap();
+    let cached = CachedClient::new(client, store).await.unwrap();
+
+    // First call fetches from API and caches
+    let mounts: MountsIndex = cached.get_data(&UrlArgs::None).await.unwrap();
+
+    // Second call returns from cache instantly (static namespace)
+    let mounts: MountsIndex = cached.get_data(&UrlArgs::None).await.unwrap();
+
+    // Force refresh bypasses cache
+    let mounts: MountsIndex = cached.get_data_force(&UrlArgs::None).await.unwrap();
+}
+```
+
+**Namespace Policies**:
+- **Static**: Cache-first — returns from database if present, fetches only on miss
+- **Dynamic**: Always fetches from API, caches afterward for analytics
+- **Profile**: Cache-first with 30-day TTL validation per Blizzard ToS 2.R
+
+### Cached Profile Example
+
+The `account-profile-cached` example combines all three features — user token
+from Redis, CachedClient with SQLite, and force-refresh:
+
+```sh
+cargo run --example account-profile-cached --features "wow user redis db-sqlite"
+```
+
+This fetches your account profile via the API (force refresh), caches it in
+SQLite, then fetches again from cache to demonstrate the speedup.
 
 ## User Token (bnauth + Redis)
 

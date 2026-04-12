@@ -1,4 +1,5 @@
 use crate::client::BattleNetClient;
+use crate::namespace::WowNamespace;
 
 pub mod achievement;
 pub mod auction_house;
@@ -183,4 +184,9 @@ pub enum UrlArgs {
 
 pub trait GenerateUrl {
     fn url(client: &BattleNetClient, url_args: &UrlArgs) -> String;
+
+    /// Returns the namespace for cache behavior. Default: Static.
+    fn cache_namespace() -> WowNamespace {
+        WowNamespace::Static
+    }
 }
