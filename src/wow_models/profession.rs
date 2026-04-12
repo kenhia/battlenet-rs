@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -49,7 +49,7 @@ struct ProfessionSkillTier {
     pub categories: Option<Vec<ProfessionCategory>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ProfessionCategory {
     pub name: String,
     pub recipes: Vec<NameAndId>,

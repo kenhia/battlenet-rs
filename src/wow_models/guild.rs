@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -17,13 +17,13 @@ struct GuildCrestComponentsIndex {
     pub borders: Vec<GuildCrestBorder>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GuildCrestEmblem {
     pub id: u64,
     pub media: KeyAndId,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GuildCrestBorder {
     pub id: u64,
     pub media: KeyAndId,
@@ -74,7 +74,7 @@ struct GuildActivity {
     pub activities: Vec<GuildActivityEntry>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GuildActivityEntry {
     pub activity: TypeAndName,
     pub timestamp: u64,
@@ -101,13 +101,13 @@ struct GuildRoster {
     pub members: Vec<GuildMember>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GuildMember {
     pub character: GuildMemberCharacter,
     pub rank: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GuildMemberCharacter {
     pub name: String,
     pub id: u64,

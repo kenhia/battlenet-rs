@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -55,7 +55,7 @@ struct PvpRewardsIndex {
     pub rewards: Vec<PvpReward>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PvpReward {
     pub bracket: TypeAndName,
     pub achievement: NameAndId,

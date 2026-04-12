@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;

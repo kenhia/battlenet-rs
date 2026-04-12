@@ -32,6 +32,8 @@ inventory.
 | `wow` | Enable WoW Game Data API models (~130 endpoints across 33 modules) |
 | `user` | Enable WoW Profile API models (~37 endpoints across 17 modules; requires `wow`) |
 | `redis` | Enable Redis-based user token reader (`src/user_token.rs`) |
+| `db-sqlite` | Enable SQLite-backed API response cache (mutually exclusive with `db-postgres`) |
+| `db-postgres` | Enable PostgreSQL-backed API response cache (mutually exclusive with `db-sqlite`) |
 | `stubs` | Reserved for future classic/other game stubs |
 
 Default (no features) = core client, auth, region, namespace, and error types only.
@@ -116,3 +118,20 @@ Key outcomes:
 - `get_data_with_token` / `get_json_with_token` client methods for Profile APIs
 - 15 runnable examples covering achievements, auctions, characters, items, mounts, etc.
 - Updated pygen code generator for bulk model creation
+
+### 004: Database Cache Layer & Rate Limiting
+
+**Status**: Complete
+**Branch**: `004-db-cache`
+**Purpose**: Add a database-backed cache layer and token-bucket rate limiter
+to reduce redundant API calls and stay within Blizzard's rate limits.
+
+Key outcomes:
+- `CachedClient<S: CacheStore>` wrapper with namespace-aware caching policies
+- SQLite (`db-sqlite`) and PostgreSQL (`db-postgres`) cache backends via sqlx 0.8
+- Static endpoints cached indefinitely; dynamic always fetched; profile cached with 30-day TTL
+- 30-day TTL enforcement for character data per Blizzard ToS Section 2.R
+- Dual-window rate limiter (100/s + 36,000/hr) with configurable "nice" mode
+- All model structs gained `Serialize` for cache JSON round-tripping
+- `account-profile-cached` example demonstrating CachedClient + Redis token + SQLite cache
+- 149 tests (145 unit + 4 integration), 5 ignored (require live DB/API)

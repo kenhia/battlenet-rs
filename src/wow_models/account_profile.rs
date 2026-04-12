@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -7,7 +7,7 @@ use crate::wow_models::{core_structs::*, GenerateUrl, UrlArgs};
 
 use model_macro::bendpoint;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AccountCharacter {
     pub character: HrefLink,
     pub protected_character: Option<HrefLink>,
@@ -21,13 +21,13 @@ pub struct AccountCharacter {
     pub level: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WowAccount {
     pub id: u64,
     pub characters: Vec<AccountCharacter>,
 }
 
-#[bendpoint(endpoint = "profile/wow/user/wow" namespace = "profile")]
+#[bendpoint(endpoint = "profile/user/wow" namespace = "profile")]
 struct AccountProfileSummary {
     #[serde(alias = "_links")]
     pub links: LinksRef,
@@ -35,7 +35,7 @@ struct AccountProfileSummary {
     pub wow_accounts: Option<Vec<WowAccount>>,
 }
 
-#[bendpoint(endpoint = "profile/wow/protected-character/{id1}-{id2}" url_args = "TwoIds" namespace = "profile")]
+#[bendpoint(endpoint = "profile/user/wow/protected-character/{id1}-{id2}" url_args = "TwoIds" namespace = "profile")]
 struct ProtectedCharacterProfile {
     #[serde(alias = "_links")]
     pub links: LinksRef,
@@ -43,7 +43,7 @@ struct ProtectedCharacterProfile {
     pub money: u64,
 }
 
-#[bendpoint(endpoint = "profile/wow/user/collections" namespace = "profile")]
+#[bendpoint(endpoint = "profile/user/wow/collections" namespace = "profile")]
 struct AccountCollectionsIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,

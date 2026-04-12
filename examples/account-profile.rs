@@ -14,6 +14,6 @@ async fn main() {
         client.get_data_with_token(&UrlArgs::None, &token).await;
     match result {
         Ok(profile) => println!("{profile:?}"),
-        Err(e) => println!("Error fetching account profile: {:?}", e),
+        Err(e) => eprintln!("Error fetching account profile: {e}\n\nIf you see an EOF/empty-body error, your user token is likely expired. Re-authenticate via bnauth."),
     }
 }

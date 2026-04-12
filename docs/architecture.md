@@ -12,8 +12,14 @@ src/
 ├── client.rs            # BattleNetClient — HTTP client + token management
 ├── errors.rs            # Error types (BattleNetClientError enum)
 ├── namespace.rs         # WowNamespace enum (Static, Dynamic, Profile)
+├── rate_limiter.rs      # RateLimiter — dual-window token bucket (unconditional)
 ├── region.rs            # BattleNetRegion enum (US, EU, KR, TW, CN)
 ├── user_token.rs        # [redis feature] UserAccessToken + Redis reader
+├── cache/               # [db-sqlite | db-postgres feature] Response caching
+│   ├── mod.rs           # CacheStore trait, CacheEntry, CacheError
+│   ├── sqlite.rs        # SqliteCacheStore (WAL mode, in-memory or file)
+│   ├── postgres.rs      # PostgresCacheStore (connection pool)
+│   └── cached_client.rs # CachedClient<S> — cache-aware BattleNetClient wrapper
 └── wow_models/          # [wow feature] All WoW Game Data + Profile models
     ├── mod.rs (wow_models.rs)  # Module root — UrlArgs, GenerateUrl trait, prelude
     ├── core_structs.rs         # Shared serde structs (HrefLink, NameAndId, Realm, etc.)
@@ -141,10 +147,15 @@ Modules are conditionally compiled via cargo feature flags:
 
 | Feature | Gates | Depends On |
 |---------|-------|------------|
-| (none) | Core: `client`, `auth`, `errors`, `region`, `namespace` | — |
+| (none) | Core: `client`, `auth`, `errors`, `region`, `namespace`, `rate_limiter` | — |
 | `wow` | `wow_models` module + all Game Data sub-modules (33) | — |
 | `user` | Profile sub-modules within `wow_models` (17) | `wow` |
 | `redis` | `user_token` module (Redis reader) | — |
+| `db-sqlite` | `cache` module with SQLite backend (`SqliteCacheStore`) | — |
+| `db-postgres` | `cache` module with PostgreSQL backend (`PostgresCacheStore`) | — |
+
+**Note**: `db-sqlite` and `db-postgres` are mutually exclusive — enabling both
+produces a compile error.
 
 In `src/wow_models.rs`, the prelude re-exports are gated:
 - `#[cfg(feature = "wow")]` — all Game Data types
@@ -222,11 +233,11 @@ struct CharacterProfileStatus {
 ```
 
 **Generated** (macro expands to):
-- `#[derive(Debug, Deserialize)]` on the struct
+- `#[derive(Debug, Serialize, Deserialize)]` on the struct
 - `pub` visibility on struct and fields
 - `pub type CharacterProfileStatusResult = Result<CharacterProfileStatus, BattleNetClientError>;`
 - `pub type CharacterProfileStatusJsonResult = Result<String, BattleNetClientError>;`
-- `impl GenerateUrl for CharacterProfileStatus { ... }` with URL construction
+- `impl GenerateUrl for CharacterProfileStatus { ... }` with URL construction and `cache_namespace()`
 
 **Attributes**:
 | Attribute | Required | Description |
@@ -302,9 +313,42 @@ pub enum BattleNetClientError {
     SerdeJsonError(serde_json::Error),     // JSON parse errors
     ClientTokenNotAvailable,               // Token not yet fetched
     ClientTokenMutex(String),              // Mutex lock failure
+    UserTokenNotAvailable,                 // Redis user token missing
+    RedisError(redis::RedisError),         // [redis feature] Redis errors
+    CacheError(CacheError),               // [db-sqlite|db-postgres] Cache errors
     Unknown,                               // Catch-all (dev use)
 }
 ```
+
+## Rate Limiter
+
+The `RateLimiter` implements a dual-window token bucket rate limiter to stay
+within Blizzard's API limits (100 requests/sec, 36,000 requests/hr).
+
+- Integrated into `BattleNetClient` via `with_rate_limiter(config)` builder
+- `acquire()` is called before every HTTP request in `send_request()` and `send_request_with_token()`
+- **Nice mode**: Reduces per-second throughput to 50 req/s for shared-server environments
+
+## CachedClient
+
+`CachedClient<S: CacheStore>` wraps `BattleNetClient` and adds database-backed
+response caching with namespace-aware policies:
+
+| Namespace | Cache Policy |
+|-----------|-------------|
+| Static | Cache-first: return from cache if present, otherwise fetch and cache |
+| Dynamic | Always-fetch: call API every time, cache afterward for analytics |
+| Profile | Cache-first with 30-day TTL: validate via `CharacterProfileStatus` when expired |
+
+Cache write failures are logged and swallowed — the API response is always
+returned to the caller (FR-025).
+
+**TTL enforcement** (profile namespace):
+1. If cached entry is < 30 days old → return directly
+2. If cached entry is ≥ 30 days old → validate via `CharacterProfileStatus` API
+3. Valid + matching ID → refresh timestamp, return cached data
+4. Invalid / 404 / ID mismatch → purge character entries, re-fetch
+5. Transient validation failure → return stale data
 
 ## Test Infrastructure
 

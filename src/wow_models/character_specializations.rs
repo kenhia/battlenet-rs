@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -7,7 +7,7 @@ use crate::wow_models::{core_structs::*, GenerateUrl, UrlArgs};
 
 use model_macro::bendpoint;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterSpecRef {
     pub specialization: NameAndId,
 }

@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -16,7 +16,7 @@ struct AuctionsIndex {
     pub commodities: HrefLink,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuctionEntry {
     pub id: u64,
     pub item: AuctionItemRef,
@@ -26,7 +26,7 @@ pub struct AuctionEntry {
     pub time_left: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuctionItemRef {
     pub id: u64,
     pub context: Option<u64>,
@@ -34,7 +34,7 @@ pub struct AuctionItemRef {
     pub modifiers: Option<Vec<AuctionItemModifier>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuctionItemModifier {
     #[serde(alias = "type")]
     pub type_: u64,
@@ -48,7 +48,7 @@ struct CommoditiesIndex {
     pub auctions: Vec<CommodityEntry>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CommodityEntry {
     pub id: u64,
     pub item: AuctionItemRef,

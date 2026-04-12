@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -7,7 +7,7 @@ use crate::wow_models::{core_structs::*, GenerateUrl, UrlArgs};
 
 use model_macro::bendpoint;
 
-// #[derive(Debug, Deserialize)]
+// #[derive(Debug, Serialize, Deserialize)]
 // pub struct CharacterProfileStatus {
 //     pub id: u64,
 //     pub is_valid: bool,
@@ -61,7 +61,7 @@ struct CharacterProfileStatus {
 }
 
 /// profile summary for a character.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CharacterProfile {
     #[serde(alias = "_links")]
     pub links: LinksRef,

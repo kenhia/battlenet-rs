@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -84,7 +84,7 @@ struct JournalInstanceMedia {
 
 // --- Journal Encounter Search ---
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct JournalEncounterSearchData {
     pub id: u32,
     pub name: NameAndId,

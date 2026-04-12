@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -7,7 +7,7 @@ use crate::wow_models::{GenerateUrl, UrlArgs};
 
 use model_macro::bendpoint;
 
-// #[derive(Debug, Deserialize)]
+// #[derive(Debug, Serialize, Deserialize)]
 // pub struct WowTokenIndex {
 //     pub price: i64,
 //     pub last_updated_timestamp: i64,

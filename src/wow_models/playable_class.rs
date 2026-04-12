@@ -1,5 +1,5 @@
 use crate::namespace::WowNamespace;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -40,7 +40,7 @@ struct PlayableClassMedia {
 
 // --- PvP Talent Slots ---
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PvpTalentSlotEntry {
     pub slot_number: u32,
     pub unlock_player_level: u32,

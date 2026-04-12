@@ -7,6 +7,8 @@
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
   ```
 - **BattleNet API credentials**: Register at [Blizzard Developer Portal](https://develop.battle.net/) to get a Client ID and Client Secret.
+- **SQLite** (optional): For `db-sqlite` feature. Usually pre-installed on Linux/macOS.
+- **PostgreSQL** (optional): For `db-postgres` feature. Requires a running PostgreSQL server.
 
 ## Clone & Setup
 
@@ -146,6 +148,8 @@ battlenet-rs = { path = "../battlenet-rs", features = ["wow", "user"] } # + Prof
 | `wow` | WoW Game Data API models (~130 endpoints) |
 | `user` | WoW Profile API models (~37 endpoints; requires `wow`) |
 | `redis` | Redis-based user token reader |
+| `db-sqlite` | SQLite-backed API response cache (mutually exclusive with `db-postgres`) |
+| `db-postgres` | PostgreSQL-backed API response cache (mutually exclusive with `db-sqlite`) |
 
 ## Run Tests
 

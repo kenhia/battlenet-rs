@@ -124,6 +124,9 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
         quote! {}
     };
 
+    // Capture namespace string before it's consumed for cache_namespace generation
+    let namespace_str = input.namespace.clone();
+
     let namespace_snip = if input.namespace.is_some() {
         let namespace = input.namespace.unwrap();
         match namespace.as_str() {
@@ -140,6 +143,22 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     } else {
         quote! {}
+    };
+
+    // Generate cache_namespace() override based on namespace attribute
+    let cache_namespace_snip = match namespace_str.as_deref() {
+        Some("dynamic") => quote! {
+            fn cache_namespace() -> WowNamespace {
+                WowNamespace::Dynamic
+            }
+        },
+        Some("profile") => quote! {
+            fn cache_namespace() -> WowNamespace {
+                WowNamespace::Profile
+            }
+        },
+        // "static" or None → use trait default (WowNamespace::Static)
+        _ => quote! {},
     };
 
     let gen_url = if input.endpoint.is_some() {
@@ -159,6 +178,8 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
                         }
                         url
                     }
+
+                    #cache_namespace_snip
                 }
             }
         } else {
@@ -170,9 +191,11 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
                         #namespace_snip
                         let base = client.region.base_url();
                         let locale = &client.locale;
-                
+
                         format!("{base}/{endpoint}?namespace={namespace}&locale={locale}")
                     }
+
+                    #cache_namespace_snip
                 }
             }
         }
@@ -181,7 +204,7 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     let output = quote! {
-        #[derive(Debug, Deserialize)]
+        #[derive(Debug, Serialize, Deserialize)]
         #pub_struct
 
         #result_types

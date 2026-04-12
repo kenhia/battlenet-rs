@@ -17,3 +17,10 @@ dist/
 
 # Rust
 *.rs.bk
+*.rlib
+*.log
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal

@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::client::BattleNetClient;
 use crate::errors::BattleNetClientError;
@@ -40,7 +40,7 @@ struct AzeriteEssenceMedia {
 
 // --- Azerite Essence Search ---
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AzeriteEssenceSearchData {
     pub allowed_specializations: Option<Vec<NameAndId>>,
     pub id: u32,
