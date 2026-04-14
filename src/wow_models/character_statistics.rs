@@ -14,10 +14,16 @@ struct CharacterStatisticsSummary {
     pub health: u64,
     pub power: u64,
     pub power_type: NameAndId,
-    pub strength: u32,
-    pub agility: u32,
-    pub intellect: u32,
-    pub stamina: u32,
+    pub strength: StatValue,
+    pub agility: StatValue,
+    pub intellect: StatValue,
+    pub stamina: StatValue,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StatValue {
+    pub base: u64,
+    pub effective: u64,
 }
 
 #[cfg(test)]
@@ -32,14 +38,14 @@ mod tests {
             "health": 120000,
             "power": 50000,
             "power_type": {"key": {"href": "https://test"}, "name": "Mana", "id": 0},
-            "strength": 100,
-            "agility": 200,
-            "intellect": 1500,
-            "stamina": 800
+            "strength": {"base": 100, "effective": 100},
+            "agility": {"base": 200, "effective": 200},
+            "intellect": {"base": 1500, "effective": 1500},
+            "stamina": {"base": 800, "effective": 800}
         }"#;
         let result: CharacterStatisticsSummary = json_to_struct(json).unwrap();
         assert_eq!(result.health, 120000);
-        assert_eq!(result.intellect, 1500);
+        assert_eq!(result.intellect.effective, 1500);
         assert_eq!(result.power_type.name, "Mana");
     }
 }

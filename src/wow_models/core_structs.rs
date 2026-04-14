@@ -27,7 +27,8 @@ pub struct TypeAndValue {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NameAndId {
-    pub key: HrefLink,
+    #[serde(default)]
+    pub key: Option<HrefLink>,
     pub name: String,
     pub id: u64,
 }
@@ -86,7 +87,8 @@ pub struct CharacterCovenantProgress {
 pub struct Asset {
     pub key: String,
     pub value: String,
-    pub file_data_id: u64,
+    #[serde(default)]
+    pub file_data_id: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

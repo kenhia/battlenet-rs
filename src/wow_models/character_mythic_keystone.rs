@@ -11,8 +11,13 @@ use model_macro::bendpoint;
 struct CharacterMythicKeystoneProfileIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,
-    pub current_period: Option<HrefLink>,
-    pub seasons: Option<Vec<HrefLink>>,
+    pub current_period: Option<CurrentMythicKeystonePeriod>,
+    pub seasons: Option<Vec<KeyAndId>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CurrentMythicKeystonePeriod {
+    pub period: KeyAndId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -66,13 +71,14 @@ mod tests {
     fn test_character_mythic_keystone_profile_index() {
         let json = r#"{
             "_links": {"self": {"href": "https://test"}},
-            "current_period": {"href": "https://test/period"},
+            "current_period": {"period": {"key": {"href": "https://test/period"}, "id": 900}},
             "seasons": [
-                {"href": "https://test/season/1"}
+                {"key": {"href": "https://test/season/1"}, "id": 1}
             ]
         }"#;
         let result: CharacterMythicKeystoneProfileIndex = json_to_struct(json).unwrap();
         assert!(result.current_period.is_some());
+        assert_eq!(result.current_period.unwrap().period.id, 900);
         assert_eq!(result.seasons.unwrap().len(), 1);
     }
 }

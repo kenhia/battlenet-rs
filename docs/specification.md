@@ -1,7 +1,7 @@
 # Project Specification: battlenet-rs
 
 **Version**: 0.1.0
-**Last Updated**: 2026-04-08
+**Last Updated**: 2026-04-13
 
 ## Purpose
 
@@ -21,7 +21,9 @@ with automatic OAuth token management.
 
 The library covers ~167 endpoints across 50 API categories (30 Game Data + 18
 Profile + core). All endpoint models are gated behind cargo feature flags:
-`wow` for Game Data APIs, `user` (requires `wow`) for Profile APIs. See
+`wow` for Game Data APIs, `user` (requires `wow`) for Profile APIs. The library
+also provides a composite `full_character()` function that downloads all 28
+character profile endpoints in a single call with graceful degradation. See
 [ModelImplementProgress.md](../ModelImplementProgress.md) for the complete
 inventory.
 

@@ -129,7 +129,7 @@ async fn achievement_media_test() {
         Ok(result) => {
             assert_eq!(result.id, 40223);
             assert_eq!(result.assets[0].key, "icon".to_string());
-            assert_eq!(result.assets[0].file_data_id, 4622478);
+            assert_eq!(result.assets[0].file_data_id, Some(4622478));
         }
         Err(e) => {
             panic!("result error {:?}", e);

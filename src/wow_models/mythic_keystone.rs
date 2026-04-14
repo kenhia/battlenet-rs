@@ -94,6 +94,7 @@ struct MythicKeystoneSeasonsIndex {
     #[serde(alias = "_links")]
     pub links: LinksRef,
     pub seasons: Vec<KeyAndId>,
+    pub current_season: KeyAndId,
 }
 
 // --- Mythic Keystone Season ---
@@ -185,5 +186,20 @@ mod tests {
         }"#;
         let result: MythicKeystoneSeason = json_to_struct(json).unwrap();
         assert_eq!(result.id, 12);
+    }
+
+    #[test]
+    fn test_mythic_keystone_seasons_index() {
+        let json = r#"{
+            "_links": {"self": {"href": "https://test"}},
+            "seasons": [
+                {"key": {"href": "https://test/season/1"}, "id": 1},
+                {"key": {"href": "https://test/season/17"}, "id": 17}
+            ],
+            "current_season": {"key": {"href": "https://test/season/17"}, "id": 17}
+        }"#;
+        let result: MythicKeystoneSeasonsIndex = json_to_struct(json).unwrap();
+        assert_eq!(result.seasons.len(), 2);
+        assert_eq!(result.current_season.id, 17);
     }
 }
