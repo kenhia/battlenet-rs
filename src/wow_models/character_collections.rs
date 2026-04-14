@@ -46,7 +46,18 @@ struct CharacterPetsCollectionSummary {
 struct CharacterHeirloomsCollectionSummary {
     #[serde(alias = "_links")]
     pub links: LinksRef,
-    pub heirlooms: Vec<NameAndId>,
+    pub heirlooms: Vec<HeirloomEntry>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HeirloomEntry {
+    pub heirloom: NameAndId,
+    pub upgrade: HeirloomUpgrade,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HeirloomUpgrade {
+    pub level: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

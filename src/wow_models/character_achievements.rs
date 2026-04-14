@@ -19,7 +19,28 @@ struct CharacterAchievementsSummary {
 struct CharacterAchievementStatistics {
     #[serde(alias = "_links")]
     pub links: LinksRef,
-    pub categories: Vec<NameAndId>,
+    pub categories: Vec<AchievementStatCategory>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AchievementStatCategory {
+    #[serde(default)]
+    pub id: Option<u64>,
+    pub name: String,
+    #[serde(default)]
+    pub sub_categories: Option<Vec<AchievementStatCategory>>,
+    #[serde(default)]
+    pub statistics: Option<Vec<AchievementStatistic>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AchievementStatistic {
+    pub id: u64,
+    pub name: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    pub last_updated_timestamp: u64,
+    pub quantity: f64,
 }
 
 #[cfg(test)]

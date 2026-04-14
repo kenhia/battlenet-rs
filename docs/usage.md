@@ -326,3 +326,64 @@ fn main() {
 The user token is separate from the client credentials token. The client token
 is used automatically by `BattleNetClient` for Game Data endpoints; the user
 token must be read explicitly via `read_user_token()` for user-scoped calls.
+
+## Full Character Download
+
+Enable with `--features "wow,user"`. The `full_character()` function downloads
+all 28 character profile endpoints in a single call:
+
+```rust
+use battlenet_rs::client::BattleNetClient;
+use battlenet_rs::wow_models::full_character::*;
+
+#[tokio::main]
+async fn main() {
+    let _ = dotenvy::from_filename(".env");
+    let client = BattleNetClient::new_from_environment();
+
+    // Fetch all character data (client credentials — no user token needed)
+    let fc = full_character(&client, "trollbane", "belarsa", None)
+        .await
+        .expect("character should exist");
+
+    println!("{} @ {}", fc.character_name, fc.realm_slug);
+    if let Some(ref profile) = fc.profile {
+        println!("Level {} {}", profile.level, profile.race.name);
+    }
+
+    // Check which endpoints succeeded/failed
+    println!("Errors: {:?}", fc.errors);
+}
+```
+
+### JSON Output
+
+```rust
+let json = full_character_json(&client, "trollbane", "belarsa", None)
+    .await
+    .expect("should succeed");
+println!("{json}");
+```
+
+### With Cache
+
+```rust
+use battlenet_rs::cache::cached_client::CachedClient;
+use battlenet_rs::cache::sqlite::SqliteCacheStore;
+
+let store = SqliteCacheStore::new("sqlite:cache.db").await.unwrap();
+let cached = CachedClient::new(client, store).await.unwrap();
+
+// First call fetches from API, second call returns from cache
+let fc1 = full_character(&cached, "trollbane", "belarsa", None).await.unwrap();
+let fc2 = full_character(&cached, "trollbane", "belarsa", None).await.unwrap(); // instant
+
+// Force bypass cache
+let fc3 = full_character_force(&cached, "trollbane", "belarsa", None).await.unwrap();
+```
+
+### Running the Example
+
+```sh
+cargo run --example full-toon --features "wow,user"
+```

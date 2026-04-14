@@ -72,6 +72,9 @@ pub mod character_statistics;
 #[cfg(feature = "user")]
 pub mod character_titles;
 
+#[cfg(feature = "user")]
+pub mod full_character;
+
 /// ## some desc
 pub mod prelude {
     pub use super::achievement::*;
@@ -144,6 +147,9 @@ pub mod prelude {
     pub use super::character_statistics::*;
     #[cfg(feature = "user")]
     pub use super::character_titles::*;
+
+    #[cfg(feature = "user")]
+    pub use super::full_character::*;
 }
 
 pub enum UrlArgs {

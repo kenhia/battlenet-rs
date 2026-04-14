@@ -71,7 +71,7 @@ pub struct CharacterProfile {
     pub faction: TypeAndName,
     pub race: NameAndId,
     pub character_class: NameAndId,
-    pub active_spec: TypeAndName,
+    pub active_spec: NameAndId,
     pub realm: Realm,
     pub guild: Option<CharacterGuild>,
     pub level: u64,

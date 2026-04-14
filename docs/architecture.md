@@ -1,6 +1,6 @@
 # Architecture: battlenet-rs
 
-**Last Updated**: 2026-04-08
+**Last Updated**: 2026-04-13
 **Rust Edition**: 2021 | **MSRV**: 1.94.0+
 
 ## Module Layout
@@ -75,7 +75,8 @@ src/
     ├── character_soulbinds.rs
     ├── character_specializations.rs
     ├── character_statistics.rs
-    └── character_titles.rs
+    ├── character_titles.rs
+    └── full_character.rs       # Composite download — FullCharacter, CharacterFetcher trait
 
 bnauth/                          # Python Flask app — OAuth user token helper
 ├── pyproject.toml               # uv-managed project metadata + deps
@@ -358,7 +359,46 @@ Tests are integration tests in `tests/` that hit the live BattleNet API:
 - `tests/achievements_test.rs` — 5 tests covering all achievement endpoints
 - `tests/connected_realm_test.rs` — 2 tests (index + specific realm)
 - `tests/wow_token_test.rs` — 1 test (price range validation from env vars)
+- `tests/full_character_test.rs` — 12 tests covering FullCharacter struct, JSON, and cache integration
 
-Plus 1 unit test in `src/lib.rs` and 1 doc test on `BattleNetClient::new_from_environment`.
+Plus unit tests in `src/` modules and 1 doc test on `BattleNetClient::new_from_environment`.
 
-**Total**: 10 tests. All require valid API credentials in `.env`.
+## Full Character Download (`full_character` module)
+
+The `full_character` module provides a composite download function that fetches
+all 28 character profile endpoints in a single call, assembling results into a
+typed `FullCharacter` struct.
+
+### CharacterFetcher Trait
+
+```rust
+#[async_trait]
+pub trait CharacterFetcher: Send + Sync {
+    async fn fetch_endpoint<T>(&self, url_args: &UrlArgs) -> Result<T, BattleNetClientError>;
+    async fn fetch_endpoint_with_token<T>(&self, url_args: &UrlArgs, token: &str) -> Result<T, BattleNetClientError>;
+    async fn fetch_endpoint_force<T>(&self, url_args: &UrlArgs) -> Result<T, BattleNetClientError>;
+    async fn fetch_endpoint_with_token_force<T>(&self, url_args: &UrlArgs, token: &str) -> Result<T, BattleNetClientError>;
+}
+```
+
+Implemented for both `BattleNetClient` (direct API) and `CachedClient<S>`
+(cache-aware, feature-gated behind `db-sqlite` or `db-postgres`).
+
+### Orchestration Flow
+
+```text
+full_character(&fetcher, realm, name, token)
+  │
+  ├─ Fetch CharacterProfile (fail-fast — Err if character not found)
+  ├─ Fetch MythicKeystoneSeasonsIndex → get current_season.id
+  └─ Sequential fetch of 27 remaining endpoints via try_fetch()
+       ├─ On success: Some(data)
+       └─ On failure: None + EndpointError in errors vec
+```
+
+### Graceful Degradation
+
+- **Base profile failure** → entire download aborts with `Err`
+- **Any other endpoint failure** → `None` field + `EndpointError` entry
+- Class-specific endpoints (e.g. hunter_pets) are expected to fail for other classes
+- PvP bracket endpoints fail with 404 for characters without PvP data
