@@ -49,7 +49,7 @@ def create_app() -> Flask:
 
     client_id = os.environ["BATTLENET_CLIENT_ID"]
     client_secret = os.environ["BATTLENET_CLIENT_SECRET"]
-    flask_port = os.environ.get("BNAUTH_FLASK_PORT", "5050")
+    flask_port = os.environ.get("BNAUTH_FLASK_PORT", "5051")
     # Use 127.0.0.1 not localhost — Windows resolves localhost to ::1 (IPv6)
     # which Flask does not listen on. Override with BNAUTH_CALLBACK_HOST if needed.
     callback_host = os.environ.get("BNAUTH_CALLBACK_HOST", "127.0.0.1")
@@ -161,5 +161,5 @@ def create_app() -> Flask:
 
 if __name__ == "__main__":
     app = create_app()
-    port = int(os.environ.get("BNAUTH_FLASK_PORT", "5050"))
+    port = int(os.environ.get("BNAUTH_FLASK_PORT", "5051"))
     app.run(host="0.0.0.0", port=port, debug=True)

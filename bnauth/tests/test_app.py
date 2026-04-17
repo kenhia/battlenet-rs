@@ -14,7 +14,7 @@ _TEST_ENV = {
     "REDISCLI_AUTH": "test_redis_password",
     "BNAUTH_REDIS_HOST": "localhost",
     "BNAUTH_REDIS_PORT": "6379",
-    "BNAUTH_FLASK_PORT": "5050",
+    "BNAUTH_FLASK_PORT": "5051",
 }
 
 
