@@ -67,8 +67,7 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
     // piece together the UrlArgs bit if needed
     let is_search = input.url_args.as_deref() == Some("Search");
 
-    let url_args_snip = if input.url_args.is_some() {
-        let url_args = input.url_args.unwrap();
+    let url_args_snip = if let Some(url_args) = input.url_args {
         match url_args.as_str() {
             "Id" => quote! { 
                 let id = match url_args {
@@ -127,8 +126,7 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Capture namespace string before it's consumed for cache_namespace generation
     let namespace_str = input.namespace.clone();
 
-    let namespace_snip = if input.namespace.is_some() {
-        let namespace = input.namespace.unwrap();
+    let namespace_snip = if let Some(namespace) = input.namespace {
         match namespace.as_str() {
             "static" => quote! {
                 let namespace = WowNamespace::Static.to_region_string(&client.region);
@@ -161,8 +159,7 @@ pub fn bendpoint(attr: TokenStream, item: TokenStream) -> TokenStream {
         _ => quote! {},
     };
 
-    let gen_url = if input.endpoint.is_some() {
-        let endpoint = input.endpoint.unwrap();
+    let gen_url = if let Some(endpoint) = input.endpoint {
         if is_search {
             quote! {
                 impl GenerateUrl for #name {

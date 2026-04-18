@@ -114,3 +114,6 @@ required-features = ["wow", "user"]
 [[example]]
 name = "full-toon"
 required-features = ["wow", "user"]
+
+[workspace]
+members = ["model-macro", "ktoons/src-tauri"]
