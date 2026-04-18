@@ -387,3 +387,38 @@ let fc3 = full_character_force(&cached, "trollbane", "belarsa", None).await.unwr
 ```sh
 cargo run --example full-toon --features "wow,user"
 ```
+
+## ktoons Desktop App
+
+### Launch
+
+```sh
+cd ktoons
+pnpm tauri dev
+```
+
+### Quick Lookup
+
+1. Select a realm from the dropdown
+2. Enter a character name
+3. Click **Lookup**
+4. Character summary displays: header (name, level, race, class), equipment, stats, and specializations
+
+### Login with Battle.net
+
+1. Click **Login with Battle.net** on the launch screen
+2. Browser opens to Blizzard OAuth
+3. Authorize the app
+4. Left nav populates with all account characters grouped by realm
+5. Click any character to view their full summary
+
+### Refresh Character Data
+
+- Click **Refresh** on any character view to bypass cache and re-fetch from the API
+- The "Fetched" timestamp updates to show when data was last retrieved
+
+### Cache Behavior
+
+- Character data is cached in SQLite (`cache.db` in app data directory)
+- Subsequent views of the same character load instantly from cache
+- Use **Refresh** to force a fresh API fetch

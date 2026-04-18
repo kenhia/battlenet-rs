@@ -137,3 +137,37 @@ Key outcomes:
 - All model structs gained `Serialize` for cache JSON round-tripping
 - `account-profile-cached` example demonstrating CachedClient + Redis token + SQLite cache
 - 149 tests (145 unit + 4 integration), 5 ignored (require live DB/API)
+
+### 005: Full Character Composite Download
+
+**Status**: Complete
+**Branch**: `005-full-toon`
+**Purpose**: Aggregate all 28 character profile endpoints into a single
+`FullCharacter` composite struct with graceful degradation on partial failures.
+
+Key outcomes:
+- `FullCharacter` struct aggregating all 28 character profile endpoints
+- `full_character()` and `full_character_force()` orchestration functions
+- `CharacterFetcher` trait abstracting over `BattleNetClient` and `CachedClient`
+- Graceful degradation: base profile failure aborts, other endpoint failures
+  produce `None` field + `EndpointError` entry
+- `full_character_json()` and `full_character_json_force()` convenience wrappers
+- `full-toon` example demonstrating composite download
+
+### 006: ktoons — WoW Character Viewer (Desktop GUI)
+
+**Status**: Complete
+**Branch**: `006-ktoons-gui-app`
+**Purpose**: Build a desktop GUI application using Tauri 2 + Svelte 5 that
+provides a visual interface for browsing WoW character data via battlenet-rs.
+
+Key outcomes:
+- Tauri 2 desktop app with Svelte 5 + TypeScript frontend
+- Quick Lookup: search any character by realm + name (client token only)
+- OAuth Login: authenticate via Battle.net to list all account characters
+- Character summary view: header, equipment, stats, specializations, portrait
+- Left nav sidebar with character list (flat for lookup, grouped by realm after login)
+- Refresh button to force cache bypass and re-fetch from API
+- SQLite cache via `CachedClient` for fast repeat views
+- Partial failure handling: available sections display with warnings for failed endpoints
+- 16 vitest component tests, 5 Tauri IPC commands

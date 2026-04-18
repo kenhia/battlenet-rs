@@ -402,3 +402,54 @@ full_character(&fetcher, realm, name, token)
 - **Any other endpoint failure** → `None` field + `EndpointError` entry
 - Class-specific endpoints (e.g. hunter_pets) are expected to fail for other classes
 - PvP bracket endpoints fail with 404 for characters without PvP data
+
+## ktoons — Desktop GUI Application
+
+**Architecture**: Tauri 2 (Rust backend) + Svelte 5 (TypeScript frontend)
+
+```text
+ktoons/
+├── src-tauri/src/
+│   ├── main.rs          # Entry point — calls lib::run()
+│   ├── lib.rs           # App initialization, state setup, command registration
+│   ├── state.rs         # AppState (CachedClient + UserToken mutex)
+│   ├── commands.rs      # Tauri IPC commands (5)
+│   └── oauth.rs         # OAuth helpers (token exchange, URL building)
+├── src/
+│   ├── routes/
+│   │   └── +page.svelte # Main app page — view routing, state management
+│   └── lib/
+│       ├── types.ts     # TypeScript interfaces matching Rust types
+│       ├── commands.ts  # Typed invoke wrappers for Tauri commands
+│       └── components/
+│           ├── LaunchScreen.svelte        # Realm select + character name input
+│           ├── CharacterHeader.svelte     # Name, level, race, class, portrait
+│           ├── CharacterNav.svelte        # Left sidebar character list
+│           ├── EquipmentPanel.svelte      # Gear list with quality colors
+│           ├── StatsPanel.svelte          # Character statistics grid
+│           ├── SpecializationsPanel.svelte # Spec list with active highlight
+│           ├── LoadingSpinner.svelte       # Loading indicator
+│           └── ErrorDisplay.svelte        # Error with retry button
+└── tests/components/    # Vitest component tests
+```
+
+### Data Flow
+
+```text
+Svelte UI  ─── invoke() ───>  Tauri Command  ─── CachedClient ───>  Blizzard API
+                                    │
+                                AppState
+                           ┌────────┴────────┐
+                    CachedClient       UserToken (Mutex)
+                    (SQLite cache)     (from OAuth login)
+```
+
+### Tauri Commands
+
+| Command | Input | Output | Auth |
+|---------|-------|--------|------|
+| `get_realms` | — | `Vec<RealmEntry>` | Client token |
+| `lookup_character` | realm_slug, name | `FullCharacter` (JSON) | Client token |
+| `login` | — | `Vec<AccountCharacterEntry>` | OAuth (browser) |
+| `get_character` | realm_slug, name | `FullCharacter` (JSON) | User token if available |
+| `refresh_character` | realm_slug, name | `FullCharacter` (JSON) | User token if available |

@@ -171,3 +171,35 @@ cargo run --example get-client-token
 cargo fmt --check
 cargo clippy --all-targets --all-features -- -D warnings
 ```
+
+## ktoons Desktop App
+
+### Additional Prerequisites
+
+- **Node.js**: v20+ (v24 recommended)
+- **pnpm**: v10+ (`npm install -g pnpm`)
+- **System libraries** (Linux/Debian):
+  ```sh
+  sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+    libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+  ```
+
+### Setup & Build
+
+```sh
+cd ktoons
+pnpm install
+pnpm tauri build    # Production build
+# or
+pnpm tauri dev      # Development mode with hot reload
+```
+
+### Environment Variables
+
+ktoons reads the same `.env` file as the library:
+
+```env
+BATTLE_NET_CLIENT_ID=your_client_id
+BATTLE_NET_CLIENT_SECRET=your_client_secret
+BATTLE_NET_REGION=us
+```

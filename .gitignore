@@ -24,3 +24,9 @@ dist/
 *.db
 *.db-shm
 *.db-wal
+
+# Node.js (ktoons frontend)
+node_modules/
+dist/
+build/
+*.tsbuildinfo
